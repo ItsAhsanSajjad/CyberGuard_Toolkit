@@ -89,6 +89,9 @@ While perfectly functional as a local deployment, the foundational engineering i
    ```
    *The toolkit UI will boot up on `http://localhost:3000`.*
 
+   <img width="1919" height="964" alt="image" src="https://github.com/user-attachments/assets/4e3a6d21-17b0-45f5-9e1b-8030adffc68e" />
+
+
 ## Future Roadmap: ML Integration
 
 Given my background in Machine Learning, the next iteration of the CyberGuard Toolkit will augment its deterministic rule-based systems with predictive models. I plan to upgrade the **Phishing Scanner** with a lightweight, fine-tuned NLP model (such as DistilBERT) to analyze DOM semantics and URL lexical structures, providing real-time, deep-learning-backed threat inference on zero-day phishing campaigns.
