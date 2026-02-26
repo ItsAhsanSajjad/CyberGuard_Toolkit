@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00e5ff"/>
+      <stop offset="100%" stop-color="#0097a7"/>
+    </linearGradient>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0d1220"/>
+      <stop offset="100%" stop-color="#06080f"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+  <!-- Background circle -->
+  <circle cx="256" cy="256" r="256" fill="url(#bg)"/>
+  <!-- Outer glow ring -->
+  <circle cx="256" cy="256" r="220" fill="none" stroke="url(#g)" stroke-width="3" opacity="0.15"/>
+  <!-- Shield body -->
+  <path d="M256 72 L416 152 L416 272 C416 368 340 440 256 464 C172 440 96 368 96 272 L96 152 Z"
+        fill="none" stroke="url(#g)" stroke-width="16" stroke-linejoin="round" filter="url(#glow)"/>
+  <path d="M256 96 L396 168 L396 272 C396 356 328 420 256 442 C184 420 116 356 116 272 L116 168 Z"
+        fill="url(#bg)" fill-opacity="0.85"/>
+  <!-- Lock body -->
+  <rect x="216" y="260" width="80" height="64" rx="10" fill="url(#g)"/>
+  <!-- Lock shackle -->
+  <path d="M228 260 L228 228 C228 200 240 184 256 184 C272 184 284 200 284 228 L284 260"
+        fill="none" stroke="url(#g)" stroke-width="14" stroke-linecap="round"/>
+  <!-- Keyhole -->
+  <circle cx="256" cy="286" r="10" fill="#06080f"/>
+  <rect x="252" y="290" width="8" height="18" rx="3" fill="#06080f"/>
+  <!-- Circuit dots -->
+  <circle cx="180" cy="200" r="5" fill="#00e5ff" opacity="0.5"/>
+  <circle cx="332" cy="200" r="5" fill="#00e5ff" opacity="0.5"/>
+  <circle cx="160" cy="300" r="4" fill="#00e5ff" opacity="0.35"/>
+  <circle cx="352" cy="300" r="4" fill="#00e5ff" opacity="0.35"/>
+  <!-- Circuit lines -->
+  <line x1="185" y1="200" x2="216" y2="230" stroke="#00e5ff" stroke-width="2" opacity="0.3"/>
+  <line x1="327" y1="200" x2="296" y2="230" stroke="#00e5ff" stroke-width="2" opacity="0.3"/>
+</svg>
