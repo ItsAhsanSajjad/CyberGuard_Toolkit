@@ -4,7 +4,7 @@ import ThemeProvider from './components/ThemeProvider';
 import { Toaster } from 'react-hot-toast';
 
 export const metadata = {
-  title: 'CyberGuard Toolkit — Cybersecurity Suite',
+  title: 'Cyber Security Toolkit — Cybersecurity Suite',
   description:
     'A comprehensive cybersecurity toolkit featuring encryption, password generation, phishing detection, and more.',
   keywords: ['cybersecurity', 'encryption', 'password generator', 'phishing scanner', 'toolkit'],
@@ -18,6 +18,8 @@ export default function RootLayout({ children }) {
     <html lang="en" data-theme="dark" suppressHydrationWarning>
       <body>
         <ThemeProvider>
+          <div className="bg-layer" />
+          <div className="noise-layer" />
           <div className="app-container">
             <Sidebar />
             <main className="main-content">

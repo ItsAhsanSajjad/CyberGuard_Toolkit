@@ -1,5 +1,5 @@
 """
-CyberGuard Toolkit — FastAPI Backend
+Cyber Security Toolkit — FastAPI Backend
 Real cryptographic & security operations powering the Next.js frontend.
 """
 
@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from routers import password, encryption, file_crypto, phishing, pdf
 
 app = FastAPI(
-    title="CyberGuard Toolkit API",
+    title="Cyber Security Toolkit API",
     description="Backend API for real cybersecurity operations",
     version="1.0.0",
 )
@@ -33,4 +33,4 @@ app.include_router(pdf.router,         prefix="/api/pdf",        tags=["PDF Decr
 
 @app.get("/api/health")
 async def health():
-    return {"status": "ok", "service": "CyberGuard Toolkit API"}
+    return {"status": "ok", "service": "Cyber Security Toolkit API"}

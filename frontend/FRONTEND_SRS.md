@@ -1,9 +1,9 @@
 # Software Requirements Specification (SRS)
-# CyberGuard Toolkit — Frontend Module
+# Cyber Security Toolkit — Frontend Module
 
 **Version:** 1.0  
 **Date:** 25 February 2026  
-**Project:** CyberGuard Toolkit  
+**Project:** Cyber Security Toolkit  
 **Module:** Frontend (Next.js Web Application)  
 **Prepared By:** Development Team  
 
@@ -31,11 +31,11 @@
 
 ### 1.1 Purpose
 
-This document provides a complete Software Requirements Specification (SRS) for the **Frontend Module** of the CyberGuard Toolkit. It describes every functional and non-functional requirement, component behavior, page-level specification, API contract, design system, and architectural decision implemented in the Next.js web client.
+This document provides a complete Software Requirements Specification (SRS) for the **Frontend Module** of the Cyber Security Toolkit. It describes every functional and non-functional requirement, component behavior, page-level specification, API contract, design system, and architectural decision implemented in the Next.js web client.
 
 ### 1.2 Scope
 
-The CyberGuard Toolkit is a comprehensive cybersecurity suite that provides six core security tools through a premium, responsive single-page web application:
+The Cyber Security Toolkit is a comprehensive cybersecurity suite that provides six core security tools through a premium, responsive single-page web application:
 
 | # | Tool | Description |
 |---|------|-------------|
@@ -73,7 +73,7 @@ The CyberGuard Toolkit is a comprehensive cybersecurity suite that provides six 
 
 ### 2.1 Product Perspective
 
-The frontend is a **Next.js 16 App Router** web application that serves as the user-facing interface for the CyberGuard Toolkit. It communicates with a **FastAPI backend** via RESTful API endpoints, proxied through Next.js rewrites to avoid CORS issues during development.
+The frontend is a **Next.js 16 App Router** web application that serves as the user-facing interface for the Cyber Security Toolkit. It communicates with a **FastAPI backend** via RESTful API endpoints, proxied through Next.js rewrites to avoid CORS issues during development.
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
@@ -278,7 +278,7 @@ frontend/
 
 | ID | Requirement | Priority |
 |----|------------|----------|
-| FR-01.1 | Display a hero section with the "CyberGuard Toolkit" branding and gradient text | High |
+| FR-01.1 | Display a hero section with the "Cyber Security Toolkit" branding and gradient text | High |
 | FR-01.2 | Show a "Cybersecurity Suite" badge with ShieldCheck icon | Medium |
 | FR-01.3 | Display 3 statistics cards: "6 Security Tools", "256-bit Encryption", "Real-time Threat Scanning" | High |
 | FR-01.4 | Render a 3-column grid of 6 tool cards, each linking to its respective tool page | High |
@@ -395,14 +395,14 @@ frontend/
 | FR-08.5 | On mobile (≤768px), replace sidebar with a **top bar** (hamburger menu, brand name, theme toggle) | High |
 | FR-08.6 | Mobile sidebar must open as a full-height overlay with a semi-transparent backdrop | High |
 | FR-08.7 | Provide a **theme toggle button** (Sun/Moon icon) in both sidebar footer and mobile top bar | High |
-| FR-08.8 | Display brand: CyberGuard icon (ShieldCheck) + "CyberGuard" title + "Security Toolkit" subtitle | Medium |
+| FR-08.8 | Display brand: Cyber Security icon (ShieldCheck) + "Cyber Security" title + "Toolkit" subtitle | Medium |
 
 ### FR-09: Theme System
 
 | ID | Requirement | Priority |
 |----|------------|----------|
 | FR-09.1 | Default to **dark theme** on first visit | High |
-| FR-09.2 | Persist theme choice to `localStorage` under key `cyberguard-theme` | High |
+| FR-09.2 | Persist theme choice to `localStorage` under key `cyber-security-theme` | High |
 | FR-09.3 | Apply theme via `data-theme` attribute on `<html>` element | High |
 | FR-09.4 | Prevent flash of wrong theme on page load (FOUC prevention with mounted check) | Medium |
 | FR-09.5 | All colors must use CSS custom properties (e.g., `var(--bg-primary)`, `var(--text-primary)`) | High |
@@ -587,7 +587,7 @@ frontend/
 ```
 
 **Metadata:**
-- Title: "CyberGuard Toolkit — Cybersecurity Suite"
+- Title: "Cyber Security Toolkit — Cybersecurity Suite"
 - Keywords: cybersecurity, encryption, password generator, phishing scanner, toolkit
 - Favicon: `/icon.svg` (SVG shield with lock icon, cyan gradient on dark navy)
 
@@ -598,7 +598,7 @@ frontend/
 | Feature | Implementation |
 |---------|----------------|
 | **Context** | `ThemeContext` with `{ theme, toggleTheme }` |
-| **Persistence** | `localStorage.getItem('cyberguard-theme')` |
+| **Persistence** | `localStorage.getItem('cyber-security-theme')` |
 | **DOM sync** | `document.documentElement.setAttribute('data-theme', theme)` |
 | **FOUC prevention** | Returns default `'dark'` until `mounted` is true |
 | **Toggle** | Cycles between `'dark'` and `'light'` |

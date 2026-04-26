@@ -22,13 +22,13 @@ import {
 import { useTheme } from './ThemeProvider';
 
 const navItems = [
-  { href: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/password-generator', label: 'Password Generator', icon: KeyRound },
-  { href: '/text-encryption', label: 'Text Encryption', icon: Lock },
-  { href: '/file-crypto', label: 'File Encryptor', icon: FileKey },
-  { href: '/phishing-scanner', label: 'Phishing Scanner', icon: Shield },
-  { href: '/pdf-decryptor', label: 'PDF Decryptor', icon: FileText },
-  { href: '/temp-email', label: 'Temp Email', icon: Mail },
+  { href: '/', label: 'Overview', icon: LayoutDashboard },
+  { href: '/password-generator', label: 'Password Gen', icon: KeyRound },
+  { href: '/text-encryption', label: 'Text Crypto', icon: Lock },
+  { href: '/file-crypto', label: 'File Crypto', icon: FileKey },
+  { href: '/phishing-scanner', label: 'Phishing Scan', icon: Shield },
+  { href: '/pdf-decryptor', label: 'PDF Decrypt', icon: FileText },
+  { href: '/temp-email', label: 'Temp Mail', icon: Mail },
 ];
 
 export default function Sidebar() {
@@ -42,11 +42,11 @@ export default function Sidebar() {
       {/* ── Mobile Top Bar ── */}
       <div className="sb-topbar">
         <button className="sb-topbar-btn" onClick={() => setMobileOpen(true)} aria-label="Open menu">
-          <Menu size={19} />
+          <Menu size={18} />
         </button>
         <span className="sb-topbar-title">
-          <ShieldCheck size={15} />
-          CyberGuard
+          <ShieldCheck size={16} style={{ color: "var(--cyan)" }} />
+          Cyber Security Toolkit
         </span>
         <button className="sb-topbar-btn" onClick={toggleTheme} aria-label="Toggle theme">
           {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
@@ -76,12 +76,12 @@ export default function Sidebar() {
         <div className="sb-header">
           <div className="sb-brand">
             <div className="sb-brand-icon">
-              <ShieldCheck size={20} />
+              <ShieldCheck size={20} strokeWidth={2.5} />
             </div>
             {!collapsed && (
               <div className="sb-brand-text">
-                <span className="sb-brand-name">CyberGuard</span>
-                <span className="sb-brand-tag">Security Toolkit</span>
+                <span className="sb-brand-name">Cyber Security</span>
+                <span className="sb-brand-tag">Toolkit</span>
               </div>
             )}
           </div>
@@ -94,7 +94,7 @@ export default function Sidebar() {
         <div className="sb-sep" />
 
         {/* Nav label */}
-        {!collapsed && <div className="sb-section-label">Navigation</div>}
+        {!collapsed && <div className="sb-section-label">Modules</div>}
 
         {/* Nav Items */}
         <nav className="sb-nav">
@@ -117,7 +117,7 @@ export default function Sidebar() {
                   />
                 )}
                 <span className="sb-item-icon">
-                  <Icon size={17} strokeWidth={isActive ? 2.3 : 1.8} />
+                  <Icon size={17} strokeWidth={isActive ? 2.5 : 2} />
                 </span>
                 {!collapsed && (
                   <span className="sb-item-label">{item.label}</span>
@@ -132,7 +132,7 @@ export default function Sidebar() {
 
         {/* Bottom */}
         <div className="sb-footer">
-          <div className="sb-sep" style={{ marginBottom: 8 }} />
+          <div className="sb-sep" style={{ marginBottom: 12 }} />
 
           <button
             className="sb-item sb-theme-item"
@@ -157,6 +157,7 @@ export default function Sidebar() {
             <span className="sb-item-icon">
               <ChevronLeft
                 size={15}
+                strokeWidth={2}
                 style={{
                   transform: collapsed ? 'rotate(180deg)' : 'rotate(0deg)',
                   transition: 'transform 0.3s ease',
@@ -168,6 +169,47 @@ export default function Sidebar() {
           </button>
         </div>
       </aside>
+
+      <style jsx global>{`
+        /* Sidebar Styling Overrides to achieve the premium "floating" look */
+        .sb-root {
+          position: fixed;
+          top: 16px;
+          left: 16px;
+          height: calc(100vh - 32px);
+          width: var(--sidebar-width);
+          background: var(--bg-sidebar);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-lg);
+          display: flex;
+          flex-direction: column;
+          z-index: 999;
+          transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+          overflow: hidden;
+          box-shadow: 0 4px 24px -6px rgba(0, 0, 0, 0.4);
+        }
+
+        .sb-root[data-collapsed="true"] {
+          width: var(--sidebar-collapsed);
+        }
+
+        @media (max-width: 768px) {
+          .sb-root {
+            top: 0;
+            left: 0;
+            height: 100vh;
+            border-radius: 0;
+            border: none;
+            border-right: 1px solid var(--border);
+            transform: translateX(-100%);
+            width: var(--sidebar-width) !important;
+          }
+
+          .sb-root[data-mobile-open="true"] {
+            transform: translateX(0);
+          }
+        }
+      `}</style>
     </>
   );
 }

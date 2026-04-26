@@ -13,7 +13,7 @@ export default function ThemeProvider({ children }) {
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        const saved = localStorage.getItem('cyberguard-theme') || 'dark';
+        const saved = localStorage.getItem('cyber-security-theme') || 'dark';
         setTheme(saved);
         document.documentElement.setAttribute('data-theme', saved);
         setMounted(true);
@@ -23,7 +23,7 @@ export default function ThemeProvider({ children }) {
         const next = theme === 'dark' ? 'light' : 'dark';
         setTheme(next);
         document.documentElement.setAttribute('data-theme', next);
-        localStorage.setItem('cyberguard-theme', next);
+        localStorage.setItem('cyber-security-theme', next);
     };
 
     // Prevent flash of wrong theme
