@@ -9,12 +9,14 @@ import math
 import secrets
 import string
 import hashlib
+import logging
 
 import httpx
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
 router = APIRouter()
+log = logging.getLogger(__name__)
 
 
 # ── Schemas ───────────────────────────────────────────────────────────
@@ -88,8 +90,10 @@ async def _check_breach(pwd: str) -> tuple[bool, int]:
                     hash_suffix, count = line.split(":")
                     if hash_suffix == suffix:
                         return True, int(count)
-    except Exception:
-        pass  # Network error — assume not breached
+    except Exception as e:
+        # Network error or HIBP unavailable — fail open (assume not breached)
+        # rather than blocking the user from generating a password.
+        log.info("HIBP breach check failed: %s", e)
     return False, 0
 
 

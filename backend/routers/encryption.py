@@ -16,10 +16,14 @@ from pydantic import BaseModel
 
 router = APIRouter()
 
-ITERATIONS = 100_000
+# OWASP 2023+ recommends 600,000 iterations for PBKDF2-HMAC-SHA256
+ITERATIONS = 600_000
 SALT_LEN = 16
 NONCE_LEN = 12
 KEY_LEN = 32  # 256 bits
+
+MAX_TEXT_LEN = 1_000_000        # 1 MB plaintext / ciphertext
+MAX_PASSPHRASE_LEN = 1024       # 1 KB passphrase
 
 
 # ── Schemas ───────────────────────────────────────────────────────────
@@ -61,6 +65,10 @@ async def encrypt_text(req: EncryptRequest):
         raise HTTPException(400, "Text cannot be empty")
     if not req.passphrase:
         raise HTTPException(400, "Passphrase cannot be empty")
+    if len(req.text) > MAX_TEXT_LEN:
+        raise HTTPException(413, "Text too large (max 1 MB)")
+    if len(req.passphrase) > MAX_PASSPHRASE_LEN:
+        raise HTTPException(413, "Passphrase too long")
 
     salt = os.urandom(SALT_LEN)
     nonce = os.urandom(NONCE_LEN)
@@ -82,6 +90,10 @@ async def decrypt_text(req: DecryptRequest):
         raise HTTPException(400, "Ciphertext cannot be empty")
     if not req.passphrase:
         raise HTTPException(400, "Passphrase cannot be empty")
+    if len(req.ciphertext) > MAX_TEXT_LEN:
+        raise HTTPException(413, "Ciphertext too large (max 1 MB)")
+    if len(req.passphrase) > MAX_PASSPHRASE_LEN:
+        raise HTTPException(413, "Passphrase too long")
 
     try:
         packed = base64.b64decode(req.ciphertext)
