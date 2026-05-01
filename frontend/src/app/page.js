@@ -24,42 +24,48 @@ const features = [
     href: '/password-generator',
     icon: KeyRound,
     title: 'Password Generator',
-    desc: 'Create strong, secure passwords in one click.',
+    desc: 'Create strong passwords and check if they have ever been leaked online.',
+    tech: 'AES-grade RNG',
     color: '#00f0ff',
   },
   {
     href: '/text-encryption',
     icon: Lock,
     title: 'Text Encryption',
-    desc: 'Encrypt and decrypt text with a password.',
+    desc: 'Encrypt messages with a password so only the right person can read them.',
+    tech: 'AES-256',
     color: '#0a74ff',
   },
   {
     href: '/file-crypto',
     icon: FileKey,
     title: 'File Encryption',
-    desc: 'Lock and unlock files with a password.',
+    desc: 'Lock any file with a key. We detect if the file has been changed.',
+    tech: 'Fernet',
     color: '#00f0ff',
   },
   {
     href: '/phishing-scanner',
     icon: Shield,
     title: 'Phishing Scanner',
-    desc: 'Check if a website link is safe to open.',
+    desc: 'Check if a website link is safe to open before you click it.',
+    tech: '10 checks',
     color: '#0a74ff',
   },
   {
     href: '/pdf-decryptor',
     icon: FileText,
     title: 'PDF Unlocker',
-    desc: 'Recover access to password-protected PDFs.',
+    desc: 'Recover access to a locked PDF by trying passwords from a wordlist.',
+    tech: 'Wordlist',
     color: '#00f0ff',
   },
   {
     href: '/temp-email',
     icon: Mail,
     title: 'Temporary Email',
-    desc: 'Get a throwaway inbox to keep your real one private.',
+    desc: 'Generate a throwaway email address to keep your real inbox private.',
+    tech: 'Demo',
     color: '#0a74ff',
   },
 ];
@@ -91,7 +97,6 @@ export default function DashboardPage() {
             <span className="badge-pulse" />
             <ShieldCheck size={13} className="badge-icon" />
             <span className="badge-text">Cyber Security Toolkit</span>
-            <span className="badge-shimmer" aria-hidden />
           </motion.div>
 
           <motion.h1
@@ -100,8 +105,8 @@ export default function DashboardPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
           >
-            <span className="title-line">Powerful Security.</span>
-            <span className="dash-gradient">Made Simple.</span>
+            <span className="title-line">Practical security tools</span>
+            <span className="dash-gradient">for everyday use.</span>
           </motion.h1>
 
           <motion.p
@@ -110,8 +115,8 @@ export default function DashboardPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.2 }}
           >
-            Everyday cybersecurity tools in one place. Generate strong passwords, encrypt files,
-            scan suspicious links and more — right in your browser.
+            Generate passwords, encrypt files, scan suspicious links and more — all in your
+            browser. No accounts, no installs, nothing stored on our servers.
           </motion.p>
 
           <motion.div
@@ -120,25 +125,13 @@ export default function DashboardPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.3 }}
           >
-            <Link
-              href="/password-generator"
-              className="hero-btn hero-btn-primary"
-              style={{
-                background: 'linear-gradient(135deg, #00f0ff 0%, #0a74ff 100%)',
-                color: '#001a26',
-                border: '1px solid rgba(0, 240, 255, 0.6)',
-                boxShadow: '0 8px 22px rgba(0, 200, 255, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
-              }}
-            >
-              <span className="hero-btn-shine" aria-hidden />
+            <Link href="/password-generator" className="hero-btn hero-btn-primary">
               <span className="hero-btn-content">
-                Get Started <ArrowRight size={15} strokeWidth={2.5} />
+                Get started <ArrowRight size={15} strokeWidth={2.2} />
               </span>
             </Link>
             <a href="#features" className="hero-btn hero-btn-secondary">
-              <span className="hero-btn-content">
-                Explore Tools
-              </span>
+              <span className="hero-btn-content">Explore tools</span>
             </a>
           </motion.div>
 
@@ -245,16 +238,17 @@ export default function DashboardPage() {
         >
           <div className="section-eyebrow">
             <span className="eyebrow-line" aria-hidden />
-            <span className="eyebrow-text">06 Tools</span>
+            <span className="eyebrow-text">Toolkit</span>
           </div>
-          <h2 className="dash-section-title">Tools</h2>
-          <p className="dash-section-subtitle">Simple, powerful tools to help keep your data safe.</p>
+          <h2 className="dash-section-title">Six tools, one place</h2>
+          <p className="dash-section-subtitle">
+            Every module runs real cryptographic primitives — no client-side mocks. Pick a tool to get started.
+          </p>
         </motion.div>
 
         <div className="dash-grid">
           {features.map((f, i) => {
             const Icon = f.icon;
-            const num = String(i + 1).padStart(2, '0');
             return (
               <motion.div
                 key={i}
@@ -265,14 +259,11 @@ export default function DashboardPage() {
                 style={{ display: 'flex', height: '100%' }}
               >
                 <Link href={f.href} className="dash-card" style={{ '--accent': f.color }}>
+                  <div className="dash-card-accent" aria-hidden />
                   <div className="dash-card-glow" aria-hidden />
-                  <div className="dash-card-border-shine" aria-hidden />
 
-                  <div className="dash-card-head">
-                    <div className="dash-card-icon-wrap">
-                      <Icon size={22} color={f.color} strokeWidth={1.6} />
-                    </div>
-                    <span className="dash-card-num">{num}</span>
+                  <div className="dash-card-icon-wrap">
+                    <Icon size={20} color={f.color} strokeWidth={1.7} />
                   </div>
 
                   <div className="dash-card-body">
@@ -281,9 +272,10 @@ export default function DashboardPage() {
                   </div>
 
                   <div className="dash-card-foot">
-                    <span className="dash-card-link">
+                    <span className="dash-card-tech">{f.tech}</span>
+                    <span className="dash-card-cta">
                       Open
-                      <span className="dash-card-arrow"><ArrowRight size={14} /></span>
+                      <ArrowRight size={14} className="dash-card-cta-arrow" />
                     </span>
                   </div>
                 </Link>
@@ -416,42 +408,17 @@ export default function DashboardPage() {
 
         .badge-icon { color: inherit; }
         .badge-text { font-weight: 700; }
-        .badge-divider {
-          width: 1px;
-          height: 12px;
-          background: currentColor;
-          opacity: 0.35;
-          margin: 0 2px;
-        }
-        .badge-status {
-          font-weight: 500;
-          opacity: 0.75;
-          font-size: 0.66rem;
-          letter-spacing: 1.2px;
-        }
-
-        .badge-shimmer {
-          position: absolute;
-          top: 0; left: -60%;
-          height: 100%; width: 50%;
-          background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.18) 50%, transparent 70%);
-          animation: badgeShimmer 4.5s ease-in-out infinite;
-        }
-        @keyframes badgeShimmer {
-          0%   { left: -60%; }
-          60%, 100% { left: 130%; }
-        }
 
         /* ──────────────── Title ──────────────── */
         .dash-title {
           position: relative;
           font-family: var(--font-heading);
-          font-size: 4.2rem;
+          font-size: 4rem;
           font-weight: 800;
           line-height: 1.05;
           color: var(--text-primary);
-          margin-bottom: 20px;
-          letter-spacing: -0.045em;
+          margin-bottom: 22px;
+          letter-spacing: -0.04em;
           display: flex;
           flex-direction: column;
           gap: 0;
@@ -460,22 +427,15 @@ export default function DashboardPage() {
 
         .dash-gradient {
           display: inline-block;
-          background: linear-gradient(100deg,
-            #00f0ff 0%,
-            #4dd0ff 25%,
-            #0a74ff 50%,
-            #4dd0ff 75%,
-            #00f0ff 100%);
-          background-size: 220% auto;
+          background: linear-gradient(135deg, #4dd0ff 0%, #0a74ff 100%);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           background-clip: text;
-          filter: drop-shadow(0 0 24px rgba(0, 240, 255, 0.22));
-          animation: gradientShift 8s ease-in-out infinite;
         }
-        @keyframes gradientShift {
-          0%, 100% { background-position: 0% 50%; }
-          50%      { background-position: 100% 50%; }
+        :global([data-theme="light"]) .dash-gradient {
+          background: linear-gradient(135deg, #00bcd4 0%, #0a74ff 100%);
+          -webkit-background-clip: text;
+          background-clip: text;
         }
 
         .dash-subtitle {
@@ -501,86 +461,56 @@ export default function DashboardPage() {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          padding: 14px 28px;
+          padding: 13px 26px;
           font-size: 0.92rem;
           font-weight: 600;
-          letter-spacing: 0.2px;
-          border-radius: 100px;
+          letter-spacing: 0.1px;
+          border-radius: 10px;
           text-decoration: none !important;
-          overflow: hidden;
           cursor: pointer;
-          transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-                      box-shadow 0.35s ease,
-                      background 0.35s ease,
-                      border-color 0.35s ease,
-                      color 0.25s ease;
+          transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                      box-shadow 0.25s ease,
+                      background 0.25s ease,
+                      border-color 0.25s ease;
         }
 
         .hero-btn-content {
-          position: relative;
-          z-index: 2;
           display: inline-flex;
           align-items: center;
-          gap: 10px;
+          gap: 8px;
         }
 
-        /* Primary — solid gradient pill, high contrast */
+        /* Primary — solid blue pill */
         .hero-btn-primary {
-          background: linear-gradient(135deg, #00f0ff 0%, #0a74ff 100%);
-          border: 1px solid rgba(0, 240, 255, 0.6);
-          color: #001a26 !important;
-          box-shadow:
-            0 8px 22px rgba(0, 200, 255, 0.35),
-            inset 0 1px 0 rgba(255, 255, 255, 0.4);
-        }
-        :global([data-theme="light"]) .hero-btn-primary {
+          background: #0a74ff;
+          border: 1px solid #0a74ff;
           color: #ffffff !important;
+          box-shadow: 0 4px 14px rgba(10, 116, 255, 0.3);
         }
-
-        .hero-btn-primary .hero-btn-shine {
-          position: absolute;
-          top: 0;
-          left: -120%;
-          width: 60%;
-          height: 100%;
-          background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.45) 50%, transparent 70%);
-          z-index: 1;
-          transition: left 0.85s cubic-bezier(0.4, 0, 0.2, 1);
-          pointer-events: none;
-        }
-
         .hero-btn-primary:hover {
-          transform: translateY(-2px);
-          background: linear-gradient(135deg, #4dd0ff 0%, #00f0ff 50%, #0a74ff 100%);
-          box-shadow:
-            0 14px 36px rgba(0, 240, 255, 0.45),
-            0 0 50px rgba(0, 240, 255, 0.25),
-            inset 0 1px 0 rgba(255, 255, 255, 0.55);
+          transform: translateY(-1px);
+          background: #0958c4;
+          border-color: #0958c4;
+          box-shadow: 0 6px 18px rgba(10, 116, 255, 0.4);
         }
-        .hero-btn-primary:hover .hero-btn-shine { left: 140%; }
 
-        /* Secondary — clean outlined pill */
+        /* Secondary — outlined */
         .hero-btn-secondary {
-          background: rgba(255, 255, 255, 0.04);
+          background: transparent;
           border: 1px solid rgba(255, 255, 255, 0.18);
           color: var(--text-primary);
-          backdrop-filter: blur(8px);
         }
         :global([data-theme="light"]) .hero-btn-secondary {
-          background: rgba(255, 255, 255, 0.6);
-          border-color: rgba(10, 30, 60, 0.14);
+          border-color: rgba(15, 35, 75, 0.18);
         }
         .hero-btn-secondary:hover {
-          transform: translateY(-2px);
-          border-color: rgba(0, 240, 255, 0.6);
-          color: #00f0ff;
-          background: rgba(0, 240, 255, 0.06);
-          box-shadow: 0 8px 22px rgba(0, 240, 255, 0.15);
+          transform: translateY(-1px);
+          border-color: rgba(125, 180, 255, 0.5);
+          background: rgba(125, 180, 255, 0.06);
         }
         :global([data-theme="light"]) .hero-btn-secondary:hover {
-          color: #0a74ff;
-          border-color: rgba(10, 116, 255, 0.5);
-          background: rgba(10, 116, 255, 0.05);
+          border-color: rgba(10, 116, 255, 0.4);
+          background: rgba(10, 116, 255, 0.04);
         }
 
         /* ──────────────── Stats ──────────────── */
@@ -589,49 +519,41 @@ export default function DashboardPage() {
           flex-wrap: wrap;
           align-items: center;
           gap: 0;
-          padding: 10px 6px;
-          background: linear-gradient(100deg, rgba(0, 240, 255, 0.04), rgba(10, 116, 255, 0.02));
-          border: 1px solid rgba(0, 240, 255, 0.16);
-          border-radius: 12px;
-          backdrop-filter: blur(8px);
+          padding: 4px 0;
           width: fit-content;
           max-width: 100%;
-        }
-        :global([data-theme="light"]) .hero-stats {
-          border-color: rgba(10, 116, 255, 0.18);
-          background: linear-gradient(100deg, rgba(10, 116, 255, 0.04), rgba(0, 188, 212, 0.02));
         }
 
         .hero-stat {
           display: inline-flex;
           align-items: center;
-          gap: 9px;
-          padding: 6px 16px;
-          position: relative;
+          gap: 10px;
+          padding: 8px 20px 8px 0;
         }
+        .hero-stat:not(:first-child) { padding-left: 20px; }
 
         .hero-stat-icon {
           display: flex;
           align-items: center;
           justify-content: center;
-          width: 24px;
-          height: 24px;
-          border-radius: 6px;
-          color: #00f0ff;
-          background: rgba(0, 240, 255, 0.1);
-          border: 1px solid rgba(0, 240, 255, 0.22);
+          width: 28px;
+          height: 28px;
+          border-radius: 7px;
+          color: #00bcd4;
+          background: rgba(0, 188, 212, 0.10);
+          border: 1px solid rgba(0, 188, 212, 0.22);
           flex-shrink: 0;
         }
         :global([data-theme="light"]) .hero-stat-icon {
           color: #0a74ff;
           background: rgba(10, 116, 255, 0.08);
-          border-color: rgba(10, 116, 255, 0.2);
+          border-color: rgba(10, 116, 255, 0.20);
         }
         .hero-stat-meta {
           display: flex;
-          align-items: baseline;
-          gap: 6px;
-          line-height: 1;
+          flex-direction: column;
+          gap: 2px;
+          line-height: 1.2;
           white-space: nowrap;
         }
         .hero-stat-value {
@@ -649,13 +571,13 @@ export default function DashboardPage() {
         }
         .hero-stat-sep {
           width: 1px;
-          height: 22px;
-          background: linear-gradient(180deg, transparent, rgba(0, 240, 255, 0.3) 50%, transparent);
+          height: 28px;
+          background: rgba(125, 180, 255, 0.18);
           flex-shrink: 0;
           align-self: center;
         }
         :global([data-theme="light"]) .hero-stat-sep {
-          background: linear-gradient(180deg, transparent, rgba(10, 116, 255, 0.28) 50%, transparent);
+          background: rgba(15, 35, 75, 0.12);
         }
 
         /* ──────────────── Hero Visual ──────────────── */
@@ -940,7 +862,7 @@ export default function DashboardPage() {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
           grid-auto-rows: 1fr;
-          gap: 20px;
+          gap: 16px;
           align-items: stretch;
         }
 
@@ -949,140 +871,110 @@ export default function DashboardPage() {
           display: flex;
           flex-direction: column;
           text-decoration: none !important;
-          padding: 28px 26px !important;
+          padding: 24px 24px 20px !important;
           width: 100%;
           height: 100%;
-          min-height: 260px;
+          min-height: 240px;
           border: 1px solid rgba(125, 180, 255, 0.14) !important;
-          border-radius: 12px;
-          background:
-            linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0) 40%),
-            linear-gradient(180deg, rgba(20, 45, 85, 0.85) 0%, rgba(12, 28, 55, 0.85) 100%);
+          border-radius: 14px;
+          background: linear-gradient(180deg, #142a4f 0%, #0d1d3a 100%);
           box-shadow:
             inset 0 1px 0 rgba(255, 255, 255, 0.05),
-            0 4px 16px rgba(0, 0, 0, 0.25);
-          backdrop-filter: blur(10px);
+            0 2px 6px rgba(0, 0, 0, 0.25);
           overflow: hidden;
           transition:
-            border-color 0.4s ease,
-            transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-            box-shadow 0.4s ease,
-            background 0.4s ease;
+            border-color 0.3s ease,
+            transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+            box-shadow 0.3s ease,
+            background 0.3s ease;
         }
         :global([data-theme="light"]) .dash-card {
           background: #ffffff;
-          border: 1px solid rgba(15, 35, 75, 0.12) !important;
+          border: 1px solid rgba(15, 35, 75, 0.10) !important;
           box-shadow:
-            0 1px 3px rgba(15, 35, 75, 0.05),
-            0 6px 18px rgba(15, 35, 75, 0.05);
+            0 1px 2px rgba(15, 35, 75, 0.04),
+            0 1px 3px rgba(15, 35, 75, 0.03);
           backdrop-filter: none;
         }
+
+        /* Top accent line — invisible by default, brightens on hover */
+        .dash-card-accent {
+          position: absolute;
+          top: 0; left: 0; right: 0;
+          height: 1px;
+          background: linear-gradient(90deg, transparent, var(--accent) 50%, transparent);
+          opacity: 0;
+          transition: opacity 0.35s ease;
+          z-index: 2;
+        }
+        .dash-card:hover .dash-card-accent { opacity: 1; }
 
         .dash-card-glow {
           position: absolute;
           inset: 0;
-          background: radial-gradient(circle at 100% 0%, var(--accent), transparent 55%);
+          background: radial-gradient(circle at 100% 0%, var(--accent), transparent 60%);
           opacity: 0;
-          transition: opacity 0.5s ease;
+          transition: opacity 0.45s ease;
           z-index: 0;
           pointer-events: none;
         }
-
-        .dash-card-border-shine {
-          position: absolute;
-          top: 0;
-          left: -50%;
-          width: 70%;
-          height: 1px;
-          background: linear-gradient(90deg, transparent, var(--accent), transparent);
-          opacity: 0;
-          transition: opacity 0.4s ease, left 0.9s ease;
-          z-index: 2;
-        }
-
-        .dash-card:hover .dash-card-glow { opacity: 0.12; }
-        .dash-card:hover .dash-card-border-shine { opacity: 1; left: 80%; }
+        .dash-card:hover .dash-card-glow { opacity: 0.08; }
 
         .dash-card:hover {
-          border-color: var(--accent) !important;
-          transform: translateY(-4px);
-          background:
-            linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0) 40%),
-            linear-gradient(180deg, rgba(24, 52, 95, 0.92) 0%, rgba(14, 32, 60, 0.92) 100%);
+          border-color: color-mix(in srgb, var(--accent) 45%, transparent) !important;
+          transform: translateY(-3px);
           box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.08),
-            0 18px 44px rgba(0, 0, 0, 0.5),
-            0 0 30px color-mix(in srgb, var(--accent) 15%, transparent);
+            inset 0 1px 0 rgba(255, 255, 255, 0.06),
+            0 12px 28px rgba(0, 0, 0, 0.35),
+            0 0 0 1px color-mix(in srgb, var(--accent) 18%, transparent);
         }
         :global([data-theme="light"]) .dash-card:hover {
           background: #ffffff;
           box-shadow:
-            0 14px 36px rgba(15, 35, 75, 0.12),
-            0 0 0 1.5px var(--accent),
-            0 0 28px color-mix(in srgb, var(--accent) 18%, transparent);
+            0 8px 24px rgba(15, 35, 75, 0.08),
+            0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent);
         }
 
         .dash-card > * { position: relative; z-index: 1; }
 
-        /* Card head: icon + index */
-        .dash-card-head {
-          display: flex;
-          align-items: flex-start;
-          justify-content: space-between;
-          margin-bottom: 22px;
-        }
-
+        /* Icon — sits alone at the top of the card */
         .dash-card-icon-wrap {
-          width: 46px;
-          height: 46px;
+          width: 40px;
+          height: 40px;
           display: flex;
           align-items: center;
           justify-content: center;
           border-radius: 10px;
-          background: color-mix(in srgb, var(--accent) 10%, transparent);
-          border: 1px solid color-mix(in srgb, var(--accent) 32%, transparent);
-          transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-                      background 0.3s ease;
+          background: color-mix(in srgb, var(--accent) 12%, transparent);
+          border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
+          margin-bottom: 18px;
+          transition: background 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
         }
         :global([data-theme="light"]) .dash-card-icon-wrap {
-          background: color-mix(in srgb, var(--accent) 14%, white);
-          border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+          background: color-mix(in srgb, var(--accent) 10%, white);
+          border-color: color-mix(in srgb, var(--accent) 28%, transparent);
         }
         .dash-card:hover .dash-card-icon-wrap {
-          transform: scale(1.06);
           background: color-mix(in srgb, var(--accent) 18%, transparent);
+          border-color: color-mix(in srgb, var(--accent) 45%, transparent);
         }
 
-        .dash-card-num {
-          font-family: var(--font-heading);
-          font-size: 0.7rem;
-          font-weight: 700;
-          letter-spacing: 1.5px;
-          color: var(--text-muted);
-          opacity: 0.75;
-          padding-top: 6px;
-        }
-        :global([data-theme="light"]) .dash-card-num {
-          color: #94a3b8;
-          opacity: 1;
-        }
-
-        /* Card body */
-        .dash-card-body { flex: 1; }
+        /* Body — takes remaining space so footer pins to the bottom */
+        .dash-card-body { flex: 1; min-height: 0; }
 
         .dash-card-title {
           font-family: var(--font-heading);
-          font-size: 1.18rem;
+          font-size: 1.1rem;
           font-weight: 700;
           color: var(--text-primary);
           margin-bottom: 8px;
-          line-height: 1.25;
-          letter-spacing: -0.02em;
+          line-height: 1.3;
+          letter-spacing: -0.015em;
         }
         :global([data-theme="light"]) .dash-card-title { color: #0f172a; }
 
         .dash-card-desc {
-          font-size: 0.9rem;
+          font-size: 0.88rem;
           color: var(--text-secondary);
           line-height: 1.55;
           margin: 0;
@@ -1090,57 +982,46 @@ export default function DashboardPage() {
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
           overflow: hidden;
-          min-height: calc(0.9rem * 1.55 * 2);
         }
         :global([data-theme="light"]) .dash-card-desc { color: #475569; }
 
-        /* Card footer */
+        /* Footer — tech badge on the left, CTA on the right */
         .dash-card-foot {
           margin-top: 22px;
-          padding-top: 18px;
-          border-top: 1px solid rgba(0, 240, 255, 0.08);
+          padding-top: 14px;
+          border-top: 1px solid rgba(125, 180, 255, 0.10);
           display: flex;
           align-items: center;
           justify-content: space-between;
+          gap: 12px;
         }
         :global([data-theme="light"]) .dash-card-foot {
-          border-top-color: rgba(10, 30, 60, 0.12);
+          border-top-color: rgba(10, 30, 60, 0.10);
         }
 
-        .dash-card-link {
-          font-size: 0.78rem;
+        .dash-card-tech {
+          font-size: 0.7rem;
           font-weight: 600;
-          letter-spacing: 1.4px;
+          letter-spacing: 0.3px;
+          color: var(--text-muted);
           text-transform: uppercase;
-          color: var(--accent);
-          display: inline-flex;
-          align-items: center;
-          gap: 10px;
         }
+        :global([data-theme="light"]) .dash-card-tech { color: #94a3b8; }
 
-        .dash-card-arrow {
+        .dash-card-cta {
           display: inline-flex;
           align-items: center;
-          justify-content: center;
-          width: 26px;
-          height: 26px;
-          border-radius: 50%;
-          background: color-mix(in srgb, var(--accent) 14%, transparent);
-          border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
-          transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-                      background 0.3s ease;
+          gap: 6px;
+          font-size: 0.82rem;
+          font-weight: 600;
+          color: var(--accent);
+          transition: gap 0.25s ease;
         }
-        :global([data-theme="light"]) .dash-card-arrow {
-          background: color-mix(in srgb, var(--accent) 12%, white);
-          border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+        .dash-card-cta-arrow {
+          transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .dash-card:hover .dash-card-arrow {
-          transform: translateX(4px);
-          background: var(--accent);
-          color: #001823;
-          border-color: var(--accent);
-        }
-        :global([data-theme="light"]) .dash-card:hover .dash-card-arrow { color: #fff; }
+        .dash-card:hover .dash-card-cta { gap: 10px; }
+        .dash-card:hover .dash-card-cta-arrow { transform: translateX(2px); }
 
         /* ──────────────── Responsive ──────────────── */
         @media (max-width: 1024px) {

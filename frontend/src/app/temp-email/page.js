@@ -2,13 +2,17 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Copy, Check, RefreshCw, Inbox, Clock, User, Trash2 } from 'lucide-react';
+import { Mail, Copy, Check, RefreshCw, Inbox, Clock, User, Info } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+// Cryptographically-secure random local-part. Uses Web Crypto so the
+// generated address is unpredictable (Math.random would not be).
 function randomString(len) {
     const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    const buf = new Uint32Array(len);
+    crypto.getRandomValues(buf);
     let s = '';
-    for (let i = 0; i < len; i++) s += chars[Math.floor(Math.random() * chars.length)];
+    for (let i = 0; i < len; i++) s += chars[buf[i] % chars.length];
     return s;
 }
 
@@ -59,6 +63,17 @@ export default function TempEmailPage() {
             <div className="page-header">
                 <h1>Temporary Email</h1>
                 <p>Generate disposable email addresses for anonymous sign-ups and privacy</p>
+            </div>
+
+            {/* Demo notice — this module shows the UX of a temp-mail tool but
+                does not connect to a real mail provider. Sample inbox content
+                is illustrative only. */}
+            <div className="te-demo-banner">
+                <Info size={16} />
+                <span>
+                    <strong>Demo module.</strong> The address is generated locally and the inbox shows
+                    sample messages. Real provider integration (mail.tm / 1secMail) is on the roadmap.
+                </span>
             </div>
 
             {/* Email Address Display */}
@@ -167,6 +182,20 @@ export default function TempEmailPage() {
         .spin-icon {
           animation: spin 1s linear infinite;
         }
+        .te-demo-banner {
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+          padding: 12px 16px;
+          margin-bottom: 20px;
+          background: rgba(234, 179, 8, 0.08);
+          border: 1px solid rgba(234, 179, 8, 0.28);
+          border-radius: var(--radius-md);
+          color: var(--text-secondary);
+          font-size: 0.85rem;
+          line-height: 1.5;
+        }
+        .te-demo-banner strong { color: #eab308; font-weight: 600; }
         @media (max-width: 768px) {
           div[style*="grid-template-columns: 1fr 1fr"] {
             grid-template-columns: 1fr !important;

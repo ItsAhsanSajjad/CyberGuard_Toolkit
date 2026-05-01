@@ -137,6 +137,12 @@ export default function PdfDecryptorPage() {
                                         <span>{result.elapsed_seconds}s elapsed</span>
                                     </div>
                                 </div>
+
+                                {result.truncated && !result.found && (
+                                    <p style={{ textAlign: 'center', marginTop: 16, fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                                        Wordlist was capped at {result.total_passwords.toLocaleString()} entries to keep response time bounded.
+                                    </p>
+                                )}
                             </motion.div>
                         )}
                     </AnimatePresence>

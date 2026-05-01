@@ -22,13 +22,13 @@ import {
 import { useTheme } from './ThemeProvider';
 
 const navItems = [
-  { href: '/', label: 'Overview', icon: LayoutDashboard },
-  { href: '/password-generator', label: 'Password Gen', icon: KeyRound },
-  { href: '/text-encryption', label: 'Text Crypto', icon: Lock },
-  { href: '/file-crypto', label: 'File Crypto', icon: FileKey },
-  { href: '/phishing-scanner', label: 'Phishing Scan', icon: Shield },
-  { href: '/pdf-decryptor', label: 'PDF Decrypt', icon: FileText },
-  { href: '/temp-email', label: 'Temp Mail', icon: Mail },
+  { href: '/', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/password-generator', label: 'Password Generator', icon: KeyRound },
+  { href: '/text-encryption', label: 'Text Encryption', icon: Lock },
+  { href: '/file-crypto', label: 'File Encryption', icon: FileKey },
+  { href: '/phishing-scanner', label: 'Phishing Scanner', icon: Shield },
+  { href: '/pdf-decryptor', label: 'PDF Unlocker', icon: FileText },
+  { href: '/temp-email', label: 'Temporary Email', icon: Mail },
 ];
 
 export default function Sidebar() {
@@ -94,7 +94,7 @@ export default function Sidebar() {
         <div className="sb-sep" />
 
         {/* Nav label */}
-        {!collapsed && <div className="sb-section-label">Modules</div>}
+        {!collapsed && <div className="sb-section-label">Tools</div>}
 
         {/* Nav Items */}
         <nav className="sb-nav">

@@ -932,16 +932,20 @@ textarea.input-field {
 }
 
 .sb-brand-icon {
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #00bcd4 0%, #7c3aed 100%);
-  border-radius: 11px;
+  background: linear-gradient(135deg, #00bcd4 0%, #0a74ff 100%);
+  border-radius: 10px;
   color: #fff;
-  box-shadow: 0 4px 14px rgba(0, 188, 212, 0.3);
+  box-shadow: 0 2px 10px rgba(0, 188, 212, 0.25);
+}
+
+[data-theme="light"] .sb-brand-icon {
+  box-shadow: 0 2px 8px rgba(10, 116, 255, 0.25);
 }
 
 .sb-brand-text {
@@ -949,23 +953,28 @@ textarea.input-field {
   flex-direction: column;
   overflow: hidden;
   white-space: nowrap;
+  line-height: 1;
 }
 
 .sb-brand-name {
   font-family: var(--font-heading);
-  font-size: 1rem;
-  font-weight: 800;
+  font-size: 0.98rem;
+  font-weight: 700;
   color: var(--text-primary);
-  letter-spacing: -0.3px;
-  line-height: 1.2;
+  letter-spacing: -0.2px;
+  line-height: 1.25;
 }
 
 .sb-brand-tag {
-  font-size: 0.66rem;
+  font-size: 0.7rem;
   font-weight: 500;
-  color: var(--text-muted);
-  margin-top: 1px;
-  letter-spacing: 0.1px;
+  color: var(--text-secondary);
+  margin-top: 3px;
+  letter-spacing: 0.2px;
+}
+
+[data-theme="light"] .sb-brand-tag {
+  color: #64748b;
 }
 
 .sb-close-btn {
@@ -1004,21 +1013,25 @@ textarea.input-field {
 
 /* Section Label */
 .sb-section-label {
-  padding: 14px 18px 5px;
-  font-size: 0.62rem;
+  padding: 14px 18px 8px;
+  font-size: 0.66rem;
   font-weight: 700;
   color: var(--text-muted);
-  letter-spacing: 1.3px;
+  letter-spacing: 1.4px;
   text-transform: uppercase;
   flex-shrink: 0;
+}
+
+[data-theme="light"] .sb-section-label {
+  color: #64748b;
 }
 
 /* Nav */
 .sb-nav {
   display: flex;
   flex-direction: column;
-  gap: 1px;
-  padding: 5px 10px;
+  gap: 2px;
+  padding: 4px 10px;
   overflow-y: auto;
   flex-shrink: 0;
 }
@@ -1029,13 +1042,13 @@ textarea.input-field {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 10px;
-  padding: 9px 11px;
-  border-radius: 10px;
+  gap: 11px;
+  padding: 10px 12px;
+  border-radius: 8px;
   color: var(--text-secondary);
   text-decoration: none;
   font-family: var(--font-body);
-  font-size: 0.875rem;
+  font-size: 0.88rem;
   font-weight: 500;
   border: none;
   background: transparent;
@@ -1050,26 +1063,46 @@ textarea.input-field {
 
 .sb-item:hover {
   color: var(--text-primary);
-  background: var(--bg-input);
+  background: rgba(125, 180, 255, 0.06);
   text-decoration: none;
 }
 
+[data-theme="light"] .sb-item:hover {
+  background: rgba(15, 23, 42, 0.04);
+}
+
+/* Active item — restrained accent, not the loud full-cyan flood */
 .sb-item-active {
-  color: var(--cyan) !important;
+  color: #ffffff !important;
   font-weight: 600;
 }
 
-/* Active animated bg */
+[data-theme="light"] .sb-item-active {
+  color: #0a74ff !important;
+}
+
+/* Active animated background — translucent so text stays readable */
 .sb-item-bg {
   position: absolute;
   inset: 0;
-  border-radius: var(--radius-sm);
-  background: var(--cyan-glow);
+  border-radius: 8px;
+  background: rgba(0, 240, 255, 0.14);
+  border: 1px solid rgba(0, 240, 255, 0.28);
+  box-shadow: inset 3px 0 0 var(--cyan);
   z-index: 0;
 }
 
 [data-theme="light"] .sb-item-bg {
-  background: rgba(0, 150, 255, 0.15);
+  background: rgba(10, 116, 255, 0.08);
+  border: 1px solid rgba(10, 116, 255, 0.18);
+  box-shadow: inset 3px 0 0 #0a74ff;
+}
+
+/* Collapsed: center the icon, drop the gap */
+.sb-root[data-collapsed="true"] .sb-item {
+  justify-content: center;
+  padding: 10px;
+  gap: 0;
 }
 
 /* Icon */
@@ -1100,39 +1133,54 @@ textarea.input-field {
 }
 
 .sb-theme-item {
-  color: var(--text-muted) !important;
-  margin-bottom: 1px;
+  color: var(--text-secondary) !important;
+  margin-bottom: 2px;
 }
 
 .sb-theme-item:hover {
-  color: var(--cyan) !important;
+  color: var(--text-primary) !important;
+  background: rgba(125, 180, 255, 0.06);
+}
+
+[data-theme="light"] .sb-theme-item:hover {
+  background: rgba(15, 23, 42, 0.04);
 }
 
 .sb-collapse-btn {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 10px;
-  padding: 9px 11px;
-  border-radius: 10px;
+  gap: 11px;
+  padding: 10px 12px;
+  border-radius: 8px;
   background: transparent;
   border: none;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   cursor: pointer;
-  font-size: 0.83rem;
+  font-size: 0.88rem;
   font-family: var(--font-body);
   font-weight: 500;
   width: 100%;
   text-align: left;
   white-space: nowrap;
   overflow: hidden;
-  transition: all 0.2s ease;
+  transition: color 0.18s ease, background 0.18s ease;
   line-height: 1;
 }
 
 .sb-collapse-btn:hover {
-  color: var(--text-secondary);
-  background: var(--bg-input);
+  color: var(--text-primary);
+  background: rgba(125, 180, 255, 0.06);
+}
+
+[data-theme="light"] .sb-collapse-btn:hover {
+  background: rgba(15, 23, 42, 0.04);
+}
+
+.sb-root[data-collapsed="true"] .sb-collapse-btn {
+  justify-content: center;
+  padding: 10px;
+  gap: 0;
 }
 
 @media (max-width: 768px) {
