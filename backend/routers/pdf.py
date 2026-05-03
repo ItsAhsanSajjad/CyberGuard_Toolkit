@@ -16,7 +16,8 @@ import logging
 import time
 
 import pikepdf
-from fastapi import APIRouter, File, UploadFile, HTTPException
+from fastapi import APIRouter, File, Form, UploadFile, HTTPException
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 router = APIRouter()
@@ -110,4 +111,83 @@ async def decrypt_pdf(
         total_passwords=len(passwords),
         elapsed_seconds=elapsed,
         truncated=truncated,
+    )
+
+
+@router.post("/unlock")
+async def unlock_pdf(
+    pdf_file: UploadFile = File(...),
+    password: str = Form(...),
+):
+    """Unlock a password-protected PDF. Returns decrypted PDF as download."""
+    if not pdf_file.filename.lower().endswith(".pdf"):
+        raise HTTPException(400, "File must be a PDF")
+    if not password:
+        raise HTTPException(400, "Password required")
+    if len(password) > 256:
+        raise HTTPException(413, "Password too long (max 256 chars)")
+
+    pdf_content = await pdf_file.read()
+    if len(pdf_content) > MAX_PDF_SIZE:
+        raise HTTPException(413, "PDF too large (max 30 MB)")
+
+    try:
+        out = io.BytesIO()
+        with pikepdf.open(io.BytesIO(pdf_content), password=password) as pdf:
+            pdf.save(out)  # save without encryption arg = decrypted
+        out.seek(0)
+    except pikepdf.PasswordError:
+        raise HTTPException(400, "Wrong password")
+    except Exception as e:
+        log.error("PDF unlock failed: %s", e)
+        raise HTTPException(500, f"Could not unlock PDF: {e}")
+
+    safe_name = pdf_file.filename.rsplit("/", 1)[-1].rsplit("\\", 1)[-1]
+    return StreamingResponse(
+        out,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f'attachment; filename="unlocked_{safe_name}"'
+        },
+    )
+
+
+@router.post("/encrypt")
+async def encrypt_pdf(
+    pdf_file: UploadFile = File(...),
+    password: str = Form(...),
+):
+    """Lock a PDF with a password. Returns the encrypted PDF as download."""
+    if not pdf_file.filename.lower().endswith(".pdf"):
+        raise HTTPException(400, "File must be a PDF")
+    if not password.strip():
+        raise HTTPException(400, "Password required")
+    if len(password) > 256:
+        raise HTTPException(413, "Password too long (max 256 chars)")
+
+    pdf_content = await pdf_file.read()
+    if len(pdf_content) > MAX_PDF_SIZE:
+        raise HTTPException(413, "PDF too large (max 30 MB)")
+
+    try:
+        out = io.BytesIO()
+        with pikepdf.open(io.BytesIO(pdf_content)) as pdf:
+            pdf.save(
+                out,
+                encryption=pikepdf.Encryption(owner=password, user=password, R=4),
+            )
+        out.seek(0)
+    except pikepdf.PasswordError:
+        raise HTTPException(400, "PDF is already encrypted")
+    except Exception as e:
+        log.error("PDF encryption failed: %s", e)
+        raise HTTPException(500, f"Could not encrypt PDF: {e}")
+
+    safe_name = pdf_file.filename.rsplit("/", 1)[-1].rsplit("\\", 1)[-1]
+    return StreamingResponse(
+        out,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f'attachment; filename="locked_{safe_name}"'
+        },
     )
