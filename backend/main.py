@@ -8,7 +8,7 @@ import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from routers import password, encryption, file_crypto, phishing, pdf
+from routers import password, encryption, file_crypto, phishing, pdf, temp_email
 
 logging.basicConfig(
     level=logging.INFO,
@@ -40,6 +40,7 @@ app.include_router(encryption.router,  prefix="/api",            tags=["Text Enc
 app.include_router(file_crypto.router, prefix="/api/file",       tags=["File Crypto"])
 app.include_router(phishing.router,    prefix="/api/phishing",   tags=["Phishing Scanner"])
 app.include_router(pdf.router,         prefix="/api/pdf",        tags=["PDF Decryptor"])
+app.include_router(temp_email.router,  prefix="/api/temp-email", tags=["Temporary Email"])
 
 
 @app.get("/api/health")

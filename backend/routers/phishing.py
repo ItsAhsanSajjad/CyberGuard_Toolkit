@@ -18,6 +18,7 @@ import ipaddress
 import logging
 import re
 import socket
+import ssl
 from datetime import datetime, timezone
 from urllib.parse import urlparse
 
@@ -54,10 +55,26 @@ class ScanResponse(BaseModel):
 
 # ── Heuristics ────────────────────────────────────────────────────────
 SUSPICIOUS_KEYWORDS = [
+    # generic credential-harvesting words
     "login", "verify", "secure", "account", "update", "confirm",
     "signin", "banking", "password", "credential", "wallet", "paypal",
     "authenticate", "suspend", "expire",
+    # brand / gov-service impersonation (common phishing lures)
+    "echallan", "challan", "nadra", "fbr", "psca", "punjabpolice",
+    "passport", "hbl", "ubl", "mcb", "meezan", "alfalah", "askari",
+    "jazzcash", "easypaisa", "sadapay", "nayapay",
+    "amazon", "microsoft", "apple", "google", "facebook", "instagram",
+    "netflix", "whatsapp",
 ]
+
+# Cheap / abused TLDs heavily used by phishing and scam infrastructure.
+# Sources: APWG, Spamhaus, Interisle Consulting periodic reports.
+SUSPICIOUS_TLDS = {
+    "cfd", "tk", "ml", "ga", "gq", "xyz", "top", "click", "country",
+    "work", "support", "loan", "review", "win", "racing", "stream",
+    "men", "download", "trade", "party", "zip", "mov", "buzz", "rest",
+    "icu", "fit", "shop", "online", "site", "info", "live", "monster",
+}
 
 SHORTENERS = [
     "bit.ly", "tinyurl.com", "t.co", "goo.gl", "is.gd",
@@ -98,19 +115,34 @@ def _is_public_hostname(hostname: str) -> bool:
     )
 
 
-def _analyze(url: str, parsed) -> dict:
+def _analyze(url: str, parsed, ssl_info: dict | None = None) -> dict:
     score = 100
     checks: list[dict] = []
     normalized = _normalize_url(url)
     hostname = (parsed.hostname or "") if parsed else ""
     path = (parsed.path or "") if parsed else ""
 
-    # 1. HTTPS check
-    if normalized.startswith("https://"):
-        checks.append({"label": "SSL Certificate", "status": "safe", "detail": "HTTPS connection detected — encrypted"})
-    else:
+    # 1. SSL Certificate — real TLS handshake (if available) else scheme check
+    if not normalized.startswith("https://"):
         checks.append({"label": "SSL Certificate", "status": "danger", "detail": "No HTTPS — connection is NOT encrypted"})
-        score -= 25
+        score -= 30
+    elif ssl_info is None:
+        checks.append({"label": "SSL Certificate", "status": "warning", "detail": "Could not verify certificate (host unreachable)"})
+        score -= 10
+    elif not ssl_info.get("valid"):
+        checks.append({"label": "SSL Certificate", "status": "danger", "detail": ssl_info.get("error", "Certificate invalid")})
+        score -= 35
+    else:
+        days = ssl_info.get("days_left", 0)
+        issuer = ssl_info.get("issuer", "")
+        if days < 0:
+            checks.append({"label": "SSL Certificate", "status": "danger", "detail": f"Certificate expired {-days} days ago"})
+            score -= 35
+        elif days < 14:
+            checks.append({"label": "SSL Certificate", "status": "warning", "detail": f"Certificate expires in {days} days — issuer {issuer}"})
+            score -= 10
+        else:
+            checks.append({"label": "SSL Certificate", "status": "safe", "detail": f"Valid certificate, expires in {days} days — issuer {issuer}"})
 
     # 2. URL shortener check
     if any(s in hostname for s in SHORTENERS):
@@ -164,6 +196,14 @@ def _analyze(url: str, parsed) -> dict:
         checks.append({"label": "Typosquatting", "status": "warning", "detail": "Many hyphens in domain — possible typosquatting"})
         score -= 10
 
+    # 10. Suspicious / abused TLD
+    tld = hostname.rsplit(".", 1)[-1].lower() if hostname else ""
+    if tld in SUSPICIOUS_TLDS:
+        checks.append({"label": "Suspicious TLD", "status": "danger", "detail": f".{tld} is heavily abused by phishing and scam sites"})
+        score -= 30
+    elif hostname:
+        checks.append({"label": "TLD Reputation", "status": "safe", "detail": f".{tld} is a common top-level domain"})
+
     score = max(0, min(100, score))
     return {"score": score, "checks": checks}
 
@@ -181,6 +221,32 @@ async def _fetch_page_title(url: str, hostname: str) -> str | None:
     except Exception as e:
         log.info("page-title fetch failed for %s: %s", hostname, e)
     return None
+
+
+def _check_ssl(hostname: str, port: int = 443) -> dict:
+    """Real TLS handshake. Verifies chain, hostname match, and expiry.
+
+    Returns dict: {valid: bool, error?: str, days_left?: int, issuer?: str}.
+    """
+    ctx = ssl.create_default_context()
+    try:
+        with socket.create_connection((hostname, port), timeout=5) as sock:
+            with ctx.wrap_socket(sock, server_hostname=hostname) as ssock:
+                cert = ssock.getpeercert()
+        not_after = datetime.strptime(cert["notAfter"], "%b %d %H:%M:%S %Y %Z")
+        days_left = (not_after - datetime.utcnow()).days
+        issuer = dict(x[0] for x in cert.get("issuer", ())).get("organizationName", "Unknown CA")
+        return {"valid": True, "days_left": days_left, "issuer": issuer}
+    except ssl.SSLCertVerificationError as e:
+        reason = getattr(e, "reason", None) or str(e)
+        return {"valid": False, "error": f"Certificate invalid: {reason}"}
+    except ssl.SSLError as e:
+        return {"valid": False, "error": f"TLS handshake failed: {e}"}
+    except (socket.timeout, socket.gaierror, ConnectionError, OSError) as e:
+        return {"valid": False, "error": f"Could not connect over TLS: {e}"}
+    except Exception as e:
+        log.info("SSL check failed for %s: %s", hostname, e)
+        return {"valid": False, "error": "TLS check failed"}
 
 
 def _whois_lookup(hostname: str) -> int | None:
@@ -219,19 +285,25 @@ async def scan_url(req: ScanRequest):
         parsed = None
     hostname = (parsed.hostname or "") if parsed else ""
 
-    result = _analyze(req.url, parsed)
+    # Real TLS handshake (only for https URLs on resolvable public hosts).
+    # Run in a thread because socket+ssl are blocking.
+    ssl_info = None
+    if normalized.startswith("https://") and hostname and _is_public_hostname(hostname):
+        ssl_info = await asyncio.to_thread(_check_ssl, hostname)
+
+    result = _analyze(req.url, parsed, ssl_info)
     score = result["score"]
     checks = result["checks"]
 
-    # Domain age check
+    # Domain age check — newer thresholds (most phishing domains < 6 months)
     domain_age = await _get_domain_age(hostname)
     if domain_age is not None:
-        if domain_age < 30:
+        if domain_age < 90:
             checks.append({"label": "Domain Age", "status": "danger", "detail": f"Registered {domain_age} days ago — very new"})
-            score -= 20
-        elif domain_age < 180:
+            score -= 25
+        elif domain_age < 365:
             checks.append({"label": "Domain Age", "status": "warning", "detail": f"Registered {domain_age} days ago — relatively new"})
-            score -= 10
+            score -= 15
         else:
             checks.append({"label": "Domain Age", "status": "safe", "detail": f"Registered {domain_age} days ago — established"})
 

@@ -1220,6 +1220,12 @@ textarea.input-field {
   letter-spacing: 0.2px;
 }
 
+[data-theme="light"] .ps-pill {
+  background: rgba(10, 116, 255, 0.08);
+  border-color: rgba(10, 116, 255, 0.25);
+  color: #0a74ff;
+}
+
 /* Scanner Card */
 .ps-scanner-card {
   padding: 20px !important;

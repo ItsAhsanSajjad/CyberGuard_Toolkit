@@ -1,79 +1,137 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Copy, Check, RefreshCw, Inbox, Clock, User, Info } from 'lucide-react';
+import { Mail, Copy, Check, RefreshCw, Inbox, Clock, User } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-// Cryptographically-secure random local-part. Uses Web Crypto so the
-// generated address is unpredictable (Math.random would not be).
-function randomString(len) {
-    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-    const buf = new Uint32Array(len);
-    crypto.getRandomValues(buf);
-    let s = '';
-    for (let i = 0; i < len; i++) s += chars[buf[i] % chars.length];
-    return s;
-}
+const STORAGE_KEY = 'cstk_temp_email_session';
 
-const mockEmails = [
-    { id: 1, from: 'newsletter@techcorp.com', subject: 'Welcome to TechCorp!', time: '2 min ago', body: 'Thank you for signing up. Your account has been created successfully. Start exploring our platform today.' },
-    { id: 2, from: 'no-reply@verify.io', subject: 'Verify your email address', time: '5 min ago', body: 'Please click the link below to verify your email address. This link will expire in 24 hours.\n\nVerification code: 847291' },
-    { id: 3, from: 'support@service.net', subject: 'Your temporary access code', time: '8 min ago', body: 'Your one-time access code is: XK7-M2P-9QR\n\nThis code is valid for 10 minutes.' },
-];
+function formatTime(iso) {
+    try {
+        const d = new Date(iso);
+        const diff = (Date.now() - d.getTime()) / 1000;
+        if (diff < 60) return 'just now';
+        if (diff < 3600) return `${Math.floor(diff / 60)} min ago`;
+        if (diff < 86400) return `${Math.floor(diff / 3600)} h ago`;
+        return d.toLocaleString();
+    } catch { return ''; }
+}
 
 export default function TempEmailPage() {
     const [email, setEmail] = useState('');
-    const [domain, setDomain] = useState('');
+    const [token, setToken] = useState('');
     const [copied, setCopied] = useState(false);
     const [emails, setEmails] = useState([]);
     const [selectedEmail, setSelectedEmail] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [creating, setCreating] = useState(false);
+    const pollRef = useRef(null);
 
-    const generateEmail = useCallback(() => {
-        const domains = ['tempbox.io', 'quickmail.dev', 'dropmail.cc', 'fastmail.tmp'];
-        const d = domains[Math.floor(Math.random() * domains.length)];
-        const addr = randomString(10) + '@' + d;
-        setEmail(addr);
-        setDomain(d);
+    const createMailbox = useCallback(async () => {
+        setCreating(true);
         setEmails([]);
         setSelectedEmail(null);
-        toast.success('New email generated!');
+        try {
+            const res = await fetch('/api/temp-email/create', { method: 'POST' });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.detail || 'Could not create mailbox');
+            }
+            const data = await res.json();
+            setEmail(data.address);
+            setToken(data.token);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({ address: data.address, token: data.token }));
+            toast.success('New temporary email ready!');
+        } catch (e) {
+            toast.error(e.message || 'Could not create mailbox');
+        }
+        setCreating(false);
     }, []);
 
-    useEffect(() => { generateEmail(); }, [generateEmail]);
+    const refreshInbox = useCallback(async (silent = false) => {
+        if (!token) return;
+        if (!silent) setLoading(true);
+        try {
+            const res = await fetch(`/api/temp-email/messages?token=${encodeURIComponent(token)}`);
+            if (!res.ok) {
+                if (!silent) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.detail || 'Could not load inbox');
+                }
+                return;
+            }
+            const data = await res.json();
+            setEmails(data.messages || []);
+            if (!silent) {
+                if ((data.messages || []).length === 0) toast('Inbox is empty');
+                else toast.success(`${data.messages.length} message(s)`);
+            }
+        } catch (e) {
+            if (!silent) toast.error(e.message || 'Could not load inbox');
+        }
+        if (!silent) setLoading(false);
+    }, [token]);
+
+    const openEmail = async (em) => {
+        if (!token) return;
+        try {
+            const res = await fetch(`/api/temp-email/messages/${em.id}?token=${encodeURIComponent(token)}`);
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.detail || 'Could not open message');
+            }
+            const data = await res.json();
+            setSelectedEmail({ ...em, ...data });
+        } catch (e) {
+            toast.error(e.message || 'Could not open message');
+        }
+    };
+
+    // On mount: restore saved session or create new mailbox
+    useEffect(() => {
+        const saved = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null;
+        if (saved) {
+            try {
+                const { address, token } = JSON.parse(saved);
+                if (address && token) {
+                    setEmail(address);
+                    setToken(token);
+                    return;
+                }
+            } catch { /* fall through to create new */ }
+        }
+        createMailbox();
+    }, [createMailbox]);
+
+    // Poll every 10s while session active
+    useEffect(() => {
+        if (!token) return;
+        refreshInbox(true);
+        pollRef.current = setInterval(() => refreshInbox(true), 10000);
+        return () => clearInterval(pollRef.current);
+    }, [token, refreshInbox]);
 
     const handleCopy = () => {
+        if (!email) return;
         navigator.clipboard.writeText(email);
         setCopied(true);
         toast.success('Email copied!');
         setTimeout(() => setCopied(false), 2000);
     };
 
-    const handleRefresh = async () => {
-        setLoading(true);
-        await new Promise(r => setTimeout(r, 1500));
-        setEmails(mockEmails);
-        setLoading(false);
-        toast.success(`${mockEmails.length} emails received!`);
+    const handleNew = () => {
+        localStorage.removeItem(STORAGE_KEY);
+        createMailbox();
     };
+
+    const domain = email ? email.split('@')[1] : '';
 
     return (
         <div>
             <div className="page-header">
                 <h1>Temporary Email</h1>
-                <p>Generate disposable email addresses for anonymous sign-ups and privacy</p>
-            </div>
-
-            {/* Demo notice — this module shows the UX of a temp-mail tool but
-                does not connect to a real mail provider. Sample inbox content
-                is illustrative only. */}
-            <div className="te-demo-banner">
-                <Info size={16} />
-                <span>
-                    <strong>Demo module.</strong> The address is generated locally and the inbox shows
-                    sample messages. Real provider integration (mail.tm / 1secMail) is on the roadmap.
-                </span>
+                <p>Real disposable email inbox. Receive verification codes, signup emails, and OTPs without exposing your real address.</p>
             </div>
 
             {/* Email Address Display */}
@@ -82,23 +140,23 @@ export default function TempEmailPage() {
                 <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
                     <div className="result-box" style={{ flex: 1, minWidth: 200 }}>
                         <Mail size={16} style={{ marginRight: 8, verticalAlign: 'middle', opacity: 0.6 }} />
-                        {email}
+                        {email || (creating ? 'Creating mailbox...' : 'Loading...')}
                     </div>
-                    <button className="btn btn-primary" onClick={handleCopy}>
+                    <button className="btn btn-primary" onClick={handleCopy} disabled={!email}>
                         {copied ? <Check size={16} /> : <Copy size={16} />}
                         {copied ? 'Copied!' : 'Copy'}
                     </button>
-                    <button className="btn btn-secondary" onClick={generateEmail}>
+                    <button className="btn btn-secondary" onClick={handleNew} disabled={creating}>
                         <RefreshCw size={16} />
                         New
                     </button>
                 </div>
                 <div style={{ marginTop: 8, fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                    Domain: <span style={{ color: 'var(--cyan)' }}>{domain}</span> • This email will auto-expire
+                    Domain: <span style={{ color: 'var(--cyan)' }}>{domain || '—'}</span> • Inbox auto-refreshes every 10s • Powered by mail.tm
                 </div>
             </div>
 
-            {/* Inbox */}
+            {/* Inbox + Detail */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, alignItems: 'start' }}>
                 <div className="glass-card-static">
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
@@ -106,7 +164,7 @@ export default function TempEmailPage() {
                             <Inbox size={16} style={{ marginRight: 6, verticalAlign: 'middle' }} />
                             Inbox ({emails.length})
                         </span>
-                        <button className="btn btn-ghost" onClick={handleRefresh} disabled={loading}>
+                        <button className="btn btn-ghost" onClick={() => refreshInbox(false)} disabled={loading || !token}>
                             <RefreshCw size={16} className={loading ? 'spin-icon' : ''} />
                             Refresh
                         </button>
@@ -115,7 +173,7 @@ export default function TempEmailPage() {
                     {emails.length === 0 && !loading && (
                         <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-muted)' }}>
                             <Inbox size={36} />
-                            <p style={{ marginTop: 12 }}>No emails yet. Click Refresh to check.</p>
+                            <p style={{ marginTop: 12 }}>Waiting for emails... Send something to your address.</p>
                         </div>
                     )}
 
@@ -134,8 +192,8 @@ export default function TempEmailPage() {
                                 key={em.id}
                                 initial={{ opacity: 0, x: -10 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: i * 0.1 }}
-                                onClick={() => setSelectedEmail(em)}
+                                transition={{ delay: i * 0.05 }}
+                                onClick={() => openEmail(em)}
                                 style={{
                                     padding: '14px 16px', borderRadius: 'var(--radius-sm)', cursor: 'pointer',
                                     transition: 'background 0.2s', marginBottom: 2,
@@ -146,10 +204,17 @@ export default function TempEmailPage() {
                                 onMouseLeave={e => { if (selectedEmail?.id !== em.id) e.currentTarget.style.background = 'transparent'; }}
                             >
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                                    <span style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-primary)' }}>{em.from}</span>
-                                    <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{em.time}</span>
+                                    <span style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-primary)' }}>
+                                        {em.from_name || em.from}
+                                    </span>
+                                    <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{formatTime(em.created_at)}</span>
                                 </div>
-                                <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>{em.subject}</div>
+                                <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: 4 }}>{em.subject || '(no subject)'}</div>
+                                {em.intro && (
+                                    <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                        {em.intro}
+                                    </div>
+                                )}
                             </motion.div>
                         ))}
                     </AnimatePresence>
@@ -165,14 +230,27 @@ export default function TempEmailPage() {
                         </div>
                     ) : (
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                            <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.1rem', marginBottom: 12 }}>{selectedEmail.subject}</h3>
-                            <div style={{ display: 'flex', gap: 16, marginBottom: 16, fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-                                <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><User size={14} /> {selectedEmail.from}</span>
-                                <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Clock size={14} /> {selectedEmail.time}</span>
+                            <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.1rem', marginBottom: 12 }}>
+                                {selectedEmail.subject || '(no subject)'}
+                            </h3>
+                            <div style={{ display: 'flex', gap: 16, marginBottom: 16, fontSize: '0.82rem', color: 'var(--text-secondary)', flexWrap: 'wrap' }}>
+                                <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                    <User size={14} /> {selectedEmail.from_name || selectedEmail.from}
+                                </span>
+                                <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                    <Clock size={14} /> {formatTime(selectedEmail.created_at)}
+                                </span>
                             </div>
-                            <div style={{ padding: '18px 20px', background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', fontFamily: 'var(--font-mono)', fontSize: '0.88rem', lineHeight: 1.7, whiteSpace: 'pre-wrap', color: 'var(--text-primary)' }}>
-                                {selectedEmail.body}
-                            </div>
+                            {selectedEmail.html && selectedEmail.html.length > 0 ? (
+                                <div
+                                    style={{ padding: '18px 20px', background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', fontSize: '0.9rem', lineHeight: 1.6, color: 'var(--text-primary)', maxHeight: 400, overflowY: 'auto' }}
+                                    dangerouslySetInnerHTML={{ __html: selectedEmail.html.join('') }}
+                                />
+                            ) : (
+                                <div style={{ padding: '18px 20px', background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', fontFamily: 'var(--font-mono)', fontSize: '0.88rem', lineHeight: 1.7, whiteSpace: 'pre-wrap', color: 'var(--text-primary)', maxHeight: 400, overflowY: 'auto' }}>
+                                    {selectedEmail.text || '(empty)'}
+                                </div>
+                            )}
                         </motion.div>
                     )}
                 </div>
@@ -182,20 +260,6 @@ export default function TempEmailPage() {
         .spin-icon {
           animation: spin 1s linear infinite;
         }
-        .te-demo-banner {
-          display: flex;
-          align-items: flex-start;
-          gap: 10px;
-          padding: 12px 16px;
-          margin-bottom: 20px;
-          background: rgba(234, 179, 8, 0.08);
-          border: 1px solid rgba(234, 179, 8, 0.28);
-          border-radius: var(--radius-md);
-          color: var(--text-secondary);
-          font-size: 0.85rem;
-          line-height: 1.5;
-        }
-        .te-demo-banner strong { color: #eab308; font-weight: 600; }
         @media (max-width: 768px) {
           div[style*="grid-template-columns: 1fr 1fr"] {
             grid-template-columns: 1fr !important;
