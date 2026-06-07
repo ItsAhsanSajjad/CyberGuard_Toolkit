@@ -89,7 +89,7 @@ While perfectly functional as a local deployment, the foundational engineering i
    ```
    *The toolkit UI will boot up on `http://localhost:3000`.*
 
-   <img width="1919" height="964" alt="image" src="https://github.com/user-attachments/assets/4e3a6d21-17b0-45f5-9e1b-8030adffc68e" />
+<img width="1915" height="868" alt="image" src="https://github.com/user-attachments/assets/fccde1e5-5761-4b9e-b64e-bf64b422c1c8" />
 
 
 ## Future Roadmap: ML Integration
