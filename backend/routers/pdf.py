@@ -15,13 +15,30 @@ import io
 import logging
 import time
 
-import pikepdf
 from fastapi import APIRouter, File, Form, UploadFile, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 router = APIRouter()
 log = logging.getLogger(__name__)
+
+# Lazy import — pikepdf's native extension may be blocked by Windows
+# Application Control policy on some machines. We catch that here so the
+# other API routes still come up; PDF endpoints return 503 instead.
+try:
+    import pikepdf  # type: ignore
+    PIKEPDF_AVAILABLE = True
+    PIKEPDF_ERROR = ""
+except Exception as _e:
+    pikepdf = None  # type: ignore
+    PIKEPDF_AVAILABLE = False
+    PIKEPDF_ERROR = str(_e)
+    log.warning("pikepdf unavailable: %s", _e)
+
+
+def _ensure_pikepdf() -> None:
+    if not PIKEPDF_AVAILABLE:
+        raise HTTPException(503, f"PDF backend unavailable: {PIKEPDF_ERROR}")
 
 MAX_PDF_SIZE = 30 * 1024 * 1024       # 30 MB
 MAX_WORDLIST_SIZE = 10 * 1024 * 1024  # 10 MB
@@ -57,6 +74,7 @@ async def decrypt_pdf(
     pdf_file: UploadFile = File(...),
     wordlist: UploadFile = File(...),
 ):
+    _ensure_pikepdf()
     # Validate file types
     if not pdf_file.filename.lower().endswith(".pdf"):
         raise HTTPException(400, "First file must be a PDF")
@@ -120,6 +138,7 @@ async def unlock_pdf(
     password: str = Form(...),
 ):
     """Unlock a password-protected PDF. Returns decrypted PDF as download."""
+    _ensure_pikepdf()
     if not pdf_file.filename.lower().endswith(".pdf"):
         raise HTTPException(400, "File must be a PDF")
     if not password:
@@ -158,6 +177,7 @@ async def encrypt_pdf(
     password: str = Form(...),
 ):
     """Lock a PDF with a password. Returns the encrypted PDF as download."""
+    _ensure_pikepdf()
     if not pdf_file.filename.lower().endswith(".pdf"):
         raise HTTPException(400, "File must be a PDF")
     if not password.strip():

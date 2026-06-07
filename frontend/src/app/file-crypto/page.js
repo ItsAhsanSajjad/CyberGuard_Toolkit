@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, FileKey, Download, Key, Copy, Check, Lock, Unlock, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -127,7 +127,7 @@ export default function FileCryptoPage() {
         <div>
             <div className="page-header">
                 <h1>File Encryptor & Decryptor</h1>
-                <p>Protect your files with Fernet symmetric encryption (AES-128-CBC + HMAC-SHA256)</p>
+                <p>Lock or unlock any file with a single key. Tamper detection built in.</p>
             </div>
 
             {/* Mode Toggle */}
@@ -286,7 +286,152 @@ export default function FileCryptoPage() {
                 </div>
             </div>
 
+            {/* Algorithm chip — animates in below the action area */}
+            <div className="fc-algo-wrap">
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={mode}
+                        initial={{ opacity: 0, y: 16, scale: 0.92 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 12, scale: 0.94 }}
+                        transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                        className={`fc-algo-chip fc-algo-${mode}`}
+                    >
+                        <span className="fc-algo-shine" aria-hidden />
+                        <span className="fc-algo-dot" />
+                        <span className="fc-algo-mode">
+                            {mode === 'encrypt' ? 'LOCK MODE' : 'UNLOCK MODE'}
+                        </span>
+                        <span className="fc-algo-sep" />
+                        <span className="fc-algo-name">Fernet</span>
+                        <span className="fc-algo-spec">AES-128-CBC · HMAC-SHA256</span>
+                    </motion.div>
+                </AnimatePresence>
+            </div>
+
             <style jsx>{`
+        .fc-algo-wrap {
+          display: flex;
+          justify-content: center;
+          margin-top: 32px;
+          margin-bottom: 8px;
+        }
+
+        .fc-algo-chip {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+          gap: 14px;
+          padding: 10px 22px;
+          background: linear-gradient(120deg, rgba(0, 240, 255, 0.10), rgba(10, 116, 255, 0.06));
+          border: 1px solid rgba(0, 240, 255, 0.32);
+          border-radius: 100px;
+          font-size: 0.82rem;
+          font-weight: 600;
+          color: var(--text-secondary);
+          letter-spacing: 0.2px;
+          box-shadow:
+            0 0 0 4px rgba(0, 240, 255, 0.05),
+            0 8px 22px rgba(0, 200, 255, 0.18);
+          overflow: hidden;
+          backdrop-filter: blur(6px);
+        }
+        :global([data-theme="light"]) .fc-algo-chip {
+          background: linear-gradient(120deg, rgba(10, 116, 255, 0.08), rgba(0, 188, 212, 0.05));
+          border-color: rgba(10, 116, 255, 0.28);
+          box-shadow:
+            0 0 0 4px rgba(10, 116, 255, 0.05),
+            0 6px 18px rgba(10, 116, 255, 0.12);
+        }
+
+        /* Mode-specific accent border tint */
+        .fc-algo-encrypt { border-color: rgba(0, 240, 255, 0.45); }
+        .fc-algo-decrypt { border-color: rgba(124, 58, 237, 0.45); }
+        :global([data-theme="light"]) .fc-algo-encrypt { border-color: rgba(10, 116, 255, 0.4); }
+        :global([data-theme="light"]) .fc-algo-decrypt { border-color: rgba(124, 58, 237, 0.4); }
+
+        /* Sweeping shine on mode change */
+        .fc-algo-shine {
+          position: absolute;
+          top: 0;
+          left: -50%;
+          width: 60%;
+          height: 100%;
+          background: linear-gradient(110deg,
+            transparent 25%,
+            rgba(255, 255, 255, 0.22) 50%,
+            transparent 75%);
+          pointer-events: none;
+          animation: fcShine 1.4s ease-out 1;
+        }
+        @keyframes fcShine {
+          0%   { left: -60%; }
+          100% { left: 130%; }
+        }
+
+        .fc-algo-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: #00f0ff;
+          box-shadow: 0 0 10px rgba(0, 240, 255, 0.9), 0 0 18px rgba(0, 240, 255, 0.5);
+          animation: fcDotPulse 1.6s ease-in-out infinite;
+          flex-shrink: 0;
+        }
+        .fc-algo-decrypt .fc-algo-dot {
+          background: #b794f4;
+          box-shadow: 0 0 10px rgba(167, 139, 250, 0.85), 0 0 18px rgba(167, 139, 250, 0.45);
+        }
+        :global([data-theme="light"]) .fc-algo-dot {
+          background: #0a74ff;
+          box-shadow: 0 0 10px rgba(10, 116, 255, 0.8);
+        }
+        :global([data-theme="light"]) .fc-algo-decrypt .fc-algo-dot {
+          background: #7c3aed;
+          box-shadow: 0 0 10px rgba(124, 58, 237, 0.7);
+        }
+        @keyframes fcDotPulse {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50%      { transform: scale(1.4); opacity: 0.6; }
+        }
+
+        .fc-algo-mode {
+          color: var(--text-primary);
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 1.1px;
+          font-size: 0.74rem;
+        }
+
+        .fc-algo-sep {
+          width: 1px;
+          height: 16px;
+          background: linear-gradient(180deg, transparent, rgba(125, 180, 255, 0.45) 50%, transparent);
+          flex-shrink: 0;
+        }
+        :global([data-theme="light"]) .fc-algo-sep {
+          background: linear-gradient(180deg, transparent, rgba(15, 35, 75, 0.25) 50%, transparent);
+        }
+
+        .fc-algo-name {
+          color: var(--cyan);
+          font-weight: 700;
+          font-size: 0.84rem;
+          letter-spacing: 0.1px;
+        }
+        .fc-algo-decrypt .fc-algo-name { color: #b794f4; }
+        :global([data-theme="light"]) .fc-algo-name { color: #0a74ff; }
+        :global([data-theme="light"]) .fc-algo-decrypt .fc-algo-name { color: #7c3aed; }
+
+        .fc-algo-spec {
+          color: var(--text-muted);
+          font-size: 0.72rem;
+          font-family: var(--font-mono, ui-monospace, monospace);
+          letter-spacing: 0.4px;
+          padding-left: 4px;
+        }
+        :global([data-theme="light"]) .fc-algo-spec { color: #64748b; }
+
         .fc-layout {
           display: grid;
           grid-template-columns: 1fr 1fr;
