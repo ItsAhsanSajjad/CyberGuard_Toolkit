@@ -5,20 +5,29 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { KeyRound, Copy, RefreshCw, Check, History, ShieldAlert, ShieldCheck } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-function getLocalStrength(password) {
-    let score = 0;
-    if (password.length >= 8) score++;
-    if (password.length >= 16) score++;
-    if (/[A-Z]/.test(password)) score++;
-    if (/[0-9]/.test(password)) score++;
-    if (/[^A-Za-z0-9]/.test(password)) score++;
-    const levels = ['weak', 'weak', 'fair', 'good', 'strong', 'very-strong'];
-    const labels = ['Weak', 'Weak', 'Fair', 'Good', 'Strong', 'Very Strong'];
-    return { score, level: levels[score], label: labels[score] };
+// Map entropy (bits) → strength bucket. Mirrors the backend's _strength().
+function strengthFromEntropy(bits) {
+    if (bits >= 80) return { score: 5, level: 'very-strong', label: 'Very Strong' };
+    if (bits >= 60) return { score: 4, level: 'strong',      label: 'Strong' };
+    if (bits >= 40) return { score: 3, level: 'good',        label: 'Good' };
+    if (bits >= 28) return { score: 2, level: 'fair',        label: 'Fair' };
+    return            { score: 1, level: 'weak',        label: 'Weak' };
+}
+
+// Fallback when backend entropy is not available: estimate from character classes.
+function estimateEntropy(password) {
+    if (!password) return 0;
+    let pool = 0;
+    if (/[a-z]/.test(password)) pool += 26;
+    if (/[A-Z]/.test(password)) pool += 26;
+    if (/[0-9]/.test(password)) pool += 10;
+    if (/[^A-Za-z0-9]/.test(password)) pool += 32;
+    return pool > 0 ? password.length * Math.log2(pool) : 0;
 }
 
 export default function PasswordGeneratorPage() {
     const [length, setLength] = useState(16);
+    const [lower, setLower] = useState(true);
     const [upper, setUpper] = useState(true);
     const [numbers, setNumbers] = useState(true);
     const [symbols, setSymbols] = useState(true);
@@ -31,12 +40,22 @@ export default function PasswordGeneratorPage() {
     const [loading, setLoading] = useState(false);
 
     const handleGenerate = useCallback(async () => {
+        if (!lower && !upper && !numbers && !symbols) {
+            toast.error('Select at least one character set');
+            return;
+        }
         setLoading(true);
         try {
             const res = await fetch('/api/password/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ length, uppercase: upper, numbers, symbols }),
+                body: JSON.stringify({
+                    length,
+                    lowercase: lower,
+                    uppercase: upper,
+                    numbers,
+                    symbols,
+                }),
             });
             if (!res.ok) throw new Error('Backend error');
             const data = await res.json();
@@ -58,10 +77,12 @@ export default function PasswordGeneratorPage() {
             }
         } catch {
             // Fallback to client-side generation
-            let chars = 'abcdefghijklmnopqrstuvwxyz';
+            let chars = '';
+            if (lower) chars += 'abcdefghijklmnopqrstuvwxyz';
             if (upper) chars += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
             if (numbers) chars += '0123456789';
             if (symbols) chars += '!@#$%^&*()_+-=[]{}|;:,.<>?';
+            if (!chars) { toast.error('Select at least one character set'); setLoading(false); return; }
             let pwd = '';
             const arr = new Uint32Array(length);
             crypto.getRandomValues(arr);
@@ -74,7 +95,7 @@ export default function PasswordGeneratorPage() {
             toast.error('Backend unavailable — generated locally');
         }
         setLoading(false);
-    }, [length, upper, numbers, symbols]);
+    }, [length, lower, upper, numbers, symbols]);
 
     const handleCopy = useCallback(() => {
         if (!password) return;
@@ -84,7 +105,9 @@ export default function PasswordGeneratorPage() {
         setTimeout(() => setCopied(false), 2000);
     }, [password]);
 
-    const strength = password ? getLocalStrength(password) : null;
+    // Prefer backend entropy. Fallback to local estimate if backend unreachable.
+    const effectiveEntropy = entropy !== null ? entropy : estimateEntropy(password);
+    const strength = password ? strengthFromEntropy(effectiveEntropy) : null;
 
     return (
         <div>
@@ -119,6 +142,13 @@ export default function PasswordGeneratorPage() {
                     {/* Options */}
                     <div className="section">
                         <span className="input-label">Character Options</span>
+                        <div className="switch-row">
+                            <span className="switch-label">Lowercase Letters (a-z)</span>
+                            <label className="switch">
+                                <input type="checkbox" checked={lower} onChange={() => setLower(!lower)} />
+                                <span className="switch-slider"></span>
+                            </label>
+                        </div>
                         <div className="switch-row">
                             <span className="switch-label">Uppercase Letters (A-Z)</span>
                             <label className="switch">
@@ -329,11 +359,13 @@ export default function PasswordGeneratorPage() {
         .history-item {
           display: flex;
           justify-content: space-between;
-          align-items: center;
+          align-items: flex-start;
+          gap: 10px;
           padding: 10px 12px;
           border-radius: var(--radius-sm);
           cursor: pointer;
           transition: background 0.2s;
+          min-width: 0;
         }
 
         .history-item:hover {
@@ -341,12 +373,14 @@ export default function PasswordGeneratorPage() {
         }
 
         .history-pwd {
+          flex: 1;
+          min-width: 0;
           font-family: var(--font-mono);
           font-size: 0.8rem;
           color: var(--text-secondary);
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
+          word-break: break-all;
+          overflow-wrap: anywhere;
+          line-height: 1.4;
         }
 
         @media (max-width: 900px) {

@@ -12,7 +12,7 @@ import hashlib
 import logging
 
 import httpx
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 router = APIRouter()
@@ -22,6 +22,7 @@ log = logging.getLogger(__name__)
 # ── Schemas ───────────────────────────────────────────────────────────
 class GenerateRequest(BaseModel):
     length: int = Field(16, ge=4, le=128)
+    lowercase: bool = True
     uppercase: bool = True
     numbers: bool = True
     symbols: bool = True
@@ -100,13 +101,18 @@ async def _check_breach(pwd: str) -> tuple[bool, int]:
 # ── Endpoints ─────────────────────────────────────────────────────────
 @router.post("/generate", response_model=GenerateResponse)
 async def generate_password(req: GenerateRequest):
-    chars = string.ascii_lowercase
+    chars = ""
+    if req.lowercase:
+        chars += string.ascii_lowercase
     if req.uppercase:
         chars += string.ascii_uppercase
     if req.numbers:
         chars += string.digits
     if req.symbols:
         chars += string.punctuation
+
+    if not chars:
+        raise HTTPException(400, "Select at least one character set")
 
     pwd = "".join(secrets.choice(chars) for _ in range(req.length))
     ent = _entropy(pwd)

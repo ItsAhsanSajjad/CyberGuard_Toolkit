@@ -299,12 +299,23 @@ export default function FileCryptoPage() {
                     >
                         <span className="fc-algo-shine" aria-hidden />
                         <span className="fc-algo-dot" />
-                        <span className="fc-algo-mode">
-                            {mode === 'encrypt' ? 'LOCK MODE' : 'UNLOCK MODE'}
-                        </span>
+                        <div className="fc-algo-left">
+                            <span className="fc-algo-mode">
+                                {mode === 'encrypt' ? 'LOCK MODE' : 'UNLOCK MODE'}
+                            </span>
+                            <span className="fc-algo-name">Fernet</span>
+                        </div>
                         <span className="fc-algo-sep" />
-                        <span className="fc-algo-name">Fernet</span>
-                        <span className="fc-algo-spec">AES-128-CBC · HMAC-SHA256</span>
+                        <div className="fc-algo-spec">
+                            <div className="fc-algo-spec-row">
+                                <span className="fc-algo-spec-label">Encryption:</span>
+                                <span className="fc-algo-spec-val">AES-128-CBC</span>
+                            </div>
+                            <div className="fc-algo-spec-row">
+                                <span className="fc-algo-spec-label">Integrity:</span>
+                                <span className="fc-algo-spec-val">HMAC-SHA-256</span>
+                            </div>
+                        </div>
                     </motion.div>
                 </AnimatePresence>
             </div>
@@ -321,11 +332,11 @@ export default function FileCryptoPage() {
           position: relative;
           display: inline-flex;
           align-items: center;
-          gap: 14px;
-          padding: 10px 22px;
+          gap: 18px;
+          padding: 14px 26px;
           background: linear-gradient(120deg, rgba(0, 240, 255, 0.10), rgba(10, 116, 255, 0.06));
           border: 1px solid rgba(0, 240, 255, 0.32);
-          border-radius: 100px;
+          border-radius: 16px;
           font-size: 0.82rem;
           font-weight: 600;
           color: var(--text-secondary);
@@ -335,6 +346,13 @@ export default function FileCryptoPage() {
             0 8px 22px rgba(0, 200, 255, 0.18);
           overflow: hidden;
           backdrop-filter: blur(6px);
+        }
+
+        .fc-algo-left {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          line-height: 1.2;
         }
         :global([data-theme="light"]) .fc-algo-chip {
           background: linear-gradient(120deg, rgba(10, 116, 255, 0.08), rgba(0, 188, 212, 0.05));
@@ -405,7 +423,7 @@ export default function FileCryptoPage() {
 
         .fc-algo-sep {
           width: 1px;
-          height: 16px;
+          height: 34px;
           background: linear-gradient(180deg, transparent, rgba(125, 180, 255, 0.45) 50%, transparent);
           flex-shrink: 0;
         }
@@ -416,7 +434,7 @@ export default function FileCryptoPage() {
         .fc-algo-name {
           color: var(--cyan);
           font-weight: 700;
-          font-size: 0.84rem;
+          font-size: 0.92rem;
           letter-spacing: 0.1px;
         }
         .fc-algo-decrypt .fc-algo-name { color: #b794f4; }
@@ -424,13 +442,51 @@ export default function FileCryptoPage() {
         :global([data-theme="light"]) .fc-algo-decrypt .fc-algo-name { color: #7c3aed; }
 
         .fc-algo-spec {
-          color: var(--text-muted);
-          font-size: 0.72rem;
-          font-family: var(--font-mono, ui-monospace, monospace);
-          letter-spacing: 0.4px;
-          padding-left: 4px;
+          display: flex;
+          flex-direction: column;
+          gap: 5px;
+          line-height: 1.3;
         }
-        :global([data-theme="light"]) .fc-algo-spec { color: #64748b; }
+        .fc-algo-spec-row {
+          display: flex;
+          align-items: baseline;
+          gap: 8px;
+          white-space: nowrap;
+          font-size: 0.78rem;
+          letter-spacing: 0.2px;
+        }
+        .fc-algo-spec-label {
+          color: var(--text-muted);
+          font-weight: 600;
+          font-size: 0.72rem;
+          text-transform: uppercase;
+          letter-spacing: 0.6px;
+        }
+        .fc-algo-spec-val {
+          color: var(--text-primary);
+          font-family: var(--font-mono, ui-monospace, SFMono-Regular, monospace);
+          font-weight: 600;
+          letter-spacing: 0.3px;
+        }
+        :global([data-theme="light"]) .fc-algo-spec-label { color: #64748b; }
+        :global([data-theme="light"]) .fc-algo-spec-val { color: #0f172a; }
+
+        @media (max-width: 640px) {
+          .fc-algo-chip {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 16px 22px;
+          }
+          .fc-algo-sep {
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(125, 180, 255, 0.35) 50%, transparent);
+          }
+          :global([data-theme="light"]) .fc-algo-sep {
+            background: linear-gradient(90deg, transparent, rgba(15, 35, 75, 0.2) 50%, transparent);
+          }
+        }
 
         .fc-layout {
           display: grid;

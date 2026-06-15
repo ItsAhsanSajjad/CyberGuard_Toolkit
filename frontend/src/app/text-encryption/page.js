@@ -174,12 +174,23 @@ export default function TextEncryptionPage() {
                     >
                         <span className="te-algo-shine" aria-hidden />
                         <span className="te-algo-dot" />
-                        <span className="te-algo-mode">
-                            {mode === 'encrypt' ? 'ENCRYPT MODE' : 'DECRYPT MODE'}
-                        </span>
+                        <div className="te-algo-left">
+                            <span className="te-algo-mode">
+                                {mode === 'encrypt' ? 'ENCRYPT MODE' : 'DECRYPT MODE'}
+                            </span>
+                            <span className="te-algo-name">AES-256-GCM</span>
+                        </div>
                         <span className="te-algo-sep" />
-                        <span className="te-algo-name">AES-256-GCM</span>
-                        <span className="te-algo-spec">PBKDF2-HMAC-SHA256 · 600k</span>
+                        <div className="te-algo-spec">
+                            <div className="te-algo-spec-row">
+                                <span className="te-algo-spec-label">Key derivation:</span>
+                                <span className="te-algo-spec-val">PBKDF2-HMAC-SHA-256</span>
+                            </div>
+                            <div className="te-algo-spec-row">
+                                <span className="te-algo-spec-label">Iterations:</span>
+                                <span className="te-algo-spec-val">600,000</span>
+                            </div>
+                        </div>
                     </motion.div>
                 </AnimatePresence>
             </div>
@@ -203,11 +214,11 @@ export default function TextEncryptionPage() {
           position: relative;
           display: inline-flex;
           align-items: center;
-          gap: 14px;
-          padding: 10px 22px;
+          gap: 18px;
+          padding: 14px 26px;
           background: linear-gradient(120deg, rgba(0, 240, 255, 0.10), rgba(10, 116, 255, 0.06));
           border: 1px solid rgba(0, 240, 255, 0.32);
-          border-radius: 100px;
+          border-radius: 16px;
           font-size: 0.82rem;
           font-weight: 600;
           color: var(--text-secondary);
@@ -283,9 +294,16 @@ export default function TextEncryptionPage() {
           font-size: 0.74rem;
         }
 
+        .te-algo-left {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          line-height: 1.2;
+        }
+
         .te-algo-sep {
           width: 1px;
-          height: 16px;
+          height: 34px;
           background: linear-gradient(180deg, transparent, rgba(125, 180, 255, 0.45) 50%, transparent);
           flex-shrink: 0;
         }
@@ -296,7 +314,7 @@ export default function TextEncryptionPage() {
         .te-algo-name {
           color: var(--cyan);
           font-weight: 700;
-          font-size: 0.84rem;
+          font-size: 0.92rem;
           letter-spacing: 0.1px;
         }
         .te-algo-decrypt .te-algo-name { color: #b794f4; }
@@ -304,11 +322,50 @@ export default function TextEncryptionPage() {
         :global([data-theme="light"]) .te-algo-decrypt .te-algo-name { color: #7c3aed; }
 
         .te-algo-spec {
+          display: flex;
+          flex-direction: column;
+          gap: 5px;
+          line-height: 1.3;
+        }
+        .te-algo-spec-row {
+          display: flex;
+          align-items: baseline;
+          gap: 8px;
+          white-space: nowrap;
+          font-size: 0.78rem;
+          letter-spacing: 0.2px;
+        }
+        .te-algo-spec-label {
           color: var(--text-muted);
+          font-weight: 600;
           font-size: 0.72rem;
-          font-family: var(--font-mono, ui-monospace, monospace);
-          letter-spacing: 0.4px;
-          padding-left: 4px;
+          text-transform: uppercase;
+          letter-spacing: 0.6px;
+        }
+        .te-algo-spec-val {
+          color: var(--text-primary);
+          font-family: var(--font-mono, ui-monospace, SFMono-Regular, monospace);
+          font-weight: 600;
+          letter-spacing: 0.3px;
+        }
+        :global([data-theme="light"]) .te-algo-spec-label { color: #64748b; }
+        :global([data-theme="light"]) .te-algo-spec-val { color: #0f172a; }
+
+        @media (max-width: 640px) {
+          .te-algo-chip {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 16px 22px;
+          }
+          .te-algo-sep {
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(125, 180, 255, 0.35) 50%, transparent);
+          }
+          :global([data-theme="light"]) .te-algo-sep {
+            background: linear-gradient(90deg, transparent, rgba(15, 35, 75, 0.2) 50%, transparent);
+          }
         }
         :global([data-theme="light"]) .te-algo-spec { color: #64748b; }
 

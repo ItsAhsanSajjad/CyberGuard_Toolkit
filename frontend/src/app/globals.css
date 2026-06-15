@@ -513,6 +513,8 @@ textarea.input-field {
   font-size: 0.95rem;
   color: var(--cyan);
   word-break: break-all;
+  overflow-wrap: anywhere;
+  max-width: 100%;
   position: relative;
 }
 
